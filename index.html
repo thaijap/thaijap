@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThaiJap - Menu</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ThaiJap</h1>
+        <div class="table-badge">Table n° <span id="display-table">--</span></div>
+    </header>
+
+    <div id="menu-container"></div>
+
+    <div id="cart-bar">
+        <div id="cart-info"><span id="cart-count">0</span> articles | <span id="cart-total">0.00</span>€</div>
+        <button id="btn-commander" onclick="envoyerCommande()">Commander</button>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY",
+            authDomain: "thaijap.firebaseapp.com",
+            databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "thaijap",
+            storageBucket: "thaijap.firebasestorage.app",
+            messagingSenderId: "84821188454",
+            appId: "1:84821188454:web:0078ba82b4affbe0abb2a7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const params = new URLSearchParams(window.location.search);
+        const tableId = params.get('table') || "Emporter";
+        document.getElementById('display-table').innerText = tableId;
+
+        let panier = [];
+        const categories = ["entrees", "sushis", "plats"];
+
+        // ON LIT À LA RACINE "/"
+        db.ref('/').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById('menu-container');
+            let html = "";
+
+            categories.forEach(cat => {
+                html += `<h2 class="category-title">${cat.toUpperCase()}</h2>`;
+                for (let id in data) {
+                    const p = data[id];
+                    // On vérifie que c'est un produit (p1, p2...) et pas le dossier commandes
+                    if (id.startsWith('p') && p.categorie === cat) {
+                        html += `
+                            <div class="product-card">
+                                <div class="product-info">
+                                    <strong>${p.nom}</strong>
+                                    <p>${p.prix.toFixed(2)}€</p>
+                                    ${p.farses ? `<select id="f-${id}" class="farce-select">${p.farses.map(f => `<option value="${f}">${f}</option>`).join('')}</select>` : ''}
+                                </div>
+                                <button class="add-btn" onclick="ajouter('${id}','${p.nom}',${p.prix},${p.farses?true:false})">+</button>
+                            </div>`;
+                    }
+                }
+            });
+            container.innerHTML = html;
+        });
+
+        function ajouter(id, nom, prix, hasFarse) {
+            let n = nom;
+            if(hasFarse) n += " (" + document.getElementById('f-'+id).value + ")";
+            panier.push({nom: n, prix: prix});
+            document.getElementById('cart-count').innerText = panier.length;
+            document.getElementById('cart-total').innerText = panier.reduce((s,i)=>s+i.prix,0).toFixed(2);
+            document.getElementById('cart-bar').style.display = "flex";
+        }
+
+        function envoyerCommande() {
+            const cmd = { table: tableId, articles: panier, statut: "En attente", heure: new Date().toLocaleTimeString() };
+            db.ref('commandes').push(cmd).then(() => {
+                alert("Commande envoyée !");
+                panier = [];
+                document.getElementById('cart-bar').style.display = "none";
+            });
+        }
+    </script>
+</body>
+</html>

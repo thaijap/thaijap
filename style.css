@@ -1,0 +1,95 @@
+/* --- VARIABLES --- */
+:root {
+    --primary: #d32f2f;
+    --dark: #1a1a1a;
+    --light: #f4f4f4;
+    --success: #27ae60;
+    --warning: #e67e22;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    background-color: var(--light);
+}
+
+/* --- DESIGN MENU CLIENT (index.html) --- */
+header {
+    background: var(--primary);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.category-title {
+    background: #ddd;
+    padding: 10px 15px;
+    font-size: 1rem;
+    color: #444;
+    margin: 0;
+}
+
+.product-card {
+    background: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.product-info strong { display: block; font-size: 1.1rem; }
+.product-info p { color: var(--primary); font-weight: bold; margin: 5px 0; }
+
+.farce-select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+.add-btn {
+    background: var(--success);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+
+#cart-bar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #222;
+    color: white;
+    padding: 15px;
+    display: none;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+/* --- DESIGN ADMIN (admin.html) --- */
+.admin-body { background: var(--dark); color: white; padding: 20px; }
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.order-card {
+    background: white;
+    color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 8px solid var(--warning);
+}
+
+.order-card.ready { border-left-color: var(--success); opacity: 0.6; }
+
+.btn-ready { background: var(--success); color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; font-weight: bold; margin-top: 10px; }
+.btn-del { background: #c0392b; color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; margin-top: 5px; }
