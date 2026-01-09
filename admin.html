@@ -2,27 +2,30 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Dashboard</title>
+    <title>Admin ThaiJap | Dashboard & Caisse</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
     <style>
-        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --grey: #1a1a1a; }
+        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --grey: #1a1a1a; --green: #2ecc71; --blue: #3498db; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 320px; background: var(--grey); border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .sidebar { width: 300px; background: var(--grey); border-right: 1px solid #333; display: flex; flex-direction: column; }
         .main { flex: 1; background: #050505; overflow-y: auto; border-right: 1px solid #333; }
-        .history { width: 340px; background: #111; overflow-y: auto; }
+        .history { width: 350px; background: #111; overflow-y: auto; }
         .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; }
-        .stock-cat { background: var(--red); color: white; padding: 5px 10px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        .stock-item { background: #151515; padding: 10px; border-bottom: 1px solid #333; }
-        .btn-toggle { border: none; padding: 4px 10px; cursor: pointer; color: #fff; font-weight: 700; border-radius: 3px; font-size: 0.65rem; }
+        .stock-item { background: #151515; padding: 10px; border-bottom: 1px solid #333; font-size: 0.8rem; }
         .order-card { background: var(--grey); padding: 15px; border-top: 5px solid var(--red); border-radius: 4px; margin: 15px; }
-        .btn { border: none; padding: 10px; cursor: pointer; color: #fff; font-weight: 700; border-radius: 4px; font-size: 0.75rem; width: 100%; margin-top: 5px; }
-        .btn-chef { background: #3498db; }
-        .btn-pay { background: var(--gold); color: #000; }
-        .history-day { background: #1a1a1a; padding: 15px; border-left: 4px solid var(--gold); margin-bottom: 5px; cursor: pointer; display: flex; justify-content: space-between; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
+        .btn { border: none; padding: 10px; cursor: pointer; color: #fff; font-weight: 700; border-radius: 4px; font-size: 0.7rem; text-transform: uppercase; }
+        .btn-chef { background: var(--blue); width: 100%; }
+        .btn-esp { background: var(--green); }
+        .btn-cb { background: #9b59b6; }
+        .btn-mix { background: #e67e22; grid-column: span 2; }
+        .history-day { background: #1a1a1a; padding: 12px; border-left: 4px solid var(--gold); margin-bottom: 5px; cursor: pointer; display: flex; justify-content: space-between; }
         .history-details { max-height: 0; overflow: hidden; transition: 0.3s; background: #050505; }
         .history-details.active { max-height: 1000px; padding: 10px; border: 1px solid #222; }
+        .h-item { font-size: 0.75rem; border-bottom: 1px solid #222; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .pay-tag { font-size: 0.65rem; padding: 2px 5px; border-radius: 3px; background: #333; color: var(--gold); }
         .only-print { display: none; }
         @media print { .no-print { display: none !important; } .only-print { display: block !important; color: #000; font-family: 'Courier Prime'; width: 80mm; padding: 10px; } }
     </style>
@@ -30,7 +33,7 @@
 <body>
     <aside class="sidebar no-print">
         <div class="panel-header">📦 STOCKS</div>
-        <div id="stock-list" class="scroll" style="overflow-y:auto;"></div>
+        <div id="stock-list" style="overflow-y:auto;"></div>
     </aside>
     <main class="main no-print">
         <div class="panel-header">🔥 EN COURS</div>
@@ -43,65 +46,73 @@
     <div id="print-zone" class="only-print"></div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY",
-            databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "thaijap",
-            appId: "1:84821188454:web:0078ba82b4affbe0abb2a7"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", projectId: "thaijap", appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const cats = ["entrees", "sushis", "plats", "boissons", "desserts"];
 
-        db.ref('/').on('value', (snap) => {
+        // CHARGEMENT STOCKS
+        db.ref('/').on('value', snap => {
             const data = snap.val(); let h = "";
-            cats.forEach(c => {
-                h += `<div class="stock-cat">${c}</div>`;
-                for(let id in data) { if(id.startsWith('p') && data[id].categorie === c) {
-                    const p = data[id]; h += `<div class="stock-item"><div style="color:var(--gold); font-size:0.8rem; font-weight:bold;">${p.nom}</div>`;
-                    if(p.specials) { p.specials.forEach((s, i) => { const off = s.dispo===false; h += `<div style="display:flex; justify-content:space-between; margin-top:3px;"><span>${s.v}</span><button class="btn-toggle ${off?'btn-off':'btn-on'}" style="background:${off?'#e74c3c':'#2ecc71'}" onclick="db.ref('${id}/specials/${i}/dispo').set(${off?true:false})">${off?'OFF':'ON'}</button></div>`; }); }
-                    else if(p.options) { p.options.forEach((o, i) => { const off = (p.optionsDispo && p.optionsDispo[i]===false); h += `<div style="display:flex; justify-content:space-between; margin-top:3px;"><span>${o}</span><button class="btn-toggle ${off?'btn-off':'btn-on'}" style="background:${off?'#e74c3c':'#2ecc71'}" onclick="db.ref('${id}/optionsDispo/${i}').set(${off?true:false})">${off?'OFF':'ON'}</button></div>`; }); }
-                    else { const off = p.dispo===false; h += `<div style="display:flex; justify-content:space-between; margin-top:3px;"><span>Général</span><button class="btn-toggle ${off?'btn-off':'btn-on'}" style="background:${off?'#e74c3c':'#2ecc71'}" onclick="db.ref('${id}/dispo').set(${off?true:false})">${off?'OFF':'ON'}</button></div>`; }
-                    h += `</div>`;
-                }}
-            });
+            for(let id in data) { if(id.startsWith('p')) {
+                const off = data[id].dispo === false;
+                h += `<div class="stock-item"><span>${data[id].nom}</span><button onclick="db.ref('${id}/dispo').set(${off?true:false})" style="background:${off?'#e74c3c':'#2ecc71'};color:#fff;border:none;padding:4px;float:right;">${off?'OFF':'ON'}</button></div>`;
+            }}
             document.getElementById('stock-list').innerHTML = h;
         });
 
-        db.ref('commandes').on('value', (snap) => {
+        // CHARGEMENT COMMANDES & HISTORIQUE
+        db.ref('commandes').on('value', snap => {
             const data = snap.val(); const grid = document.getElementById('orders-grid'); const hist = document.getElementById('history-list');
             grid.innerHTML = ""; let groups = {};
             if(data) { for(let id in data) {
                 const o = data[id]; const d = o.date || new Date().toLocaleDateString('fr-FR');
-                if(o.statut === "Payé") { if(!groups[d]) groups[d] = { total: 0, list: [] }; groups[d].total += parseFloat(o.total); groups[d].list.push(o); }
-                else {
+                if(o.statut === "Payé") {
+                    if(!groups[d]) groups[d] = { total: 0, list: [] };
+                    groups[d].total += parseFloat(o.total);
+                    groups[d].list.push(o);
+                } else {
                     grid.innerHTML += `<div class="order-card">
-                        <div style="font-size:1.5rem; color:var(--red); font-weight:700;">T-${o.table}</div>
-                        <div style="color:var(--gold); font-size:0.8rem;">${o.menu || ''}</div>
-                        <div style="margin:10px 0;">${o.articles.map(a => `<div style="border-bottom:1px solid #333; padding:4px 0;">• <strong>${a.nom}</strong>${a.note ? `<br><span style="color:#2ecc71; font-style:italic; font-size:0.8rem;">Note : ${a.note}</span>` : ''}</div>`).join('')}</div>
-                        <div style="text-align:right; font-weight:700;">Total: ${o.total}€</div>
-                        <button class="btn btn-chef" onclick="printChef('${id}')">👨‍🍳 IMPRIMER CHEF</button>
-                        <button class="btn btn-pay" onclick="encaisser('${id}')">ENCAISSER & TICKET</button>
+                        <div style="font-size:1.5rem; color:var(--red); font-weight:700;">T-${o.table} <span style="font-size:0.8rem;color:#666;float:right;">${o.heure}</span></div>
+                        <div style="color:var(--gold); font-size:0.8rem; margin-bottom:5px;">${o.menu || ''}</div>
+                        <div style="margin:10px 0;">${o.articles.map(a => `• <strong>${a.nom}</strong>${a.note ? `<br><small style="color:var(--green)">Note: ${a.note}</small>` : ''}<br>`).join('')}</div>
+                        <div style="text-align:right; font-weight:700; border-top:1px solid #333; padding-top:5px;">TOTAL: ${o.total}€</div>
+                        <button class="btn btn-chef" onclick="printChef('${id}')">👨‍🍳 TICKET CUISINE</button>
+                        <div class="btn-group">
+                            <button class="btn btn-esp" onclick="encaisser('${id}','Espèces')">💶 ESPECES</button>
+                            <button class="btn btn-cb" onclick="encaisser('${id}','Carte')">💳 CARTE CB</button>
+                            <button class="btn btn-mix" onclick="encaisser('${id}','Mixte')">🔄 PAIEMENT MIXTE</button>
+                        </div>
                     </div>`;
                 }
             }}
-            let hHtml = ""; for(let d in groups) { hHtml += `<div class="history-day" onclick="this.nextElementSibling.classList.toggle('active')"><strong>📅 ${d}</strong><span>${groups[d].total.toFixed(2)}€</span></div><div class="history-details">${groups[d].list.map(c => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #222;font-size:0.8rem;"><span>T-${c.table} (${c.heure})</span><strong>${c.total}€</strong></div>`).join('')}</div>`; }
+            let hHtml = ""; for(let d in groups) {
+                hHtml += `<div class="history-day" onclick="this.nextElementSibling.classList.toggle('active')"><strong>📅 ${d}</strong><span>${groups[d].total.toFixed(2)}€</span></div>
+                <div class="history-details">${groups[d].list.reverse().map(c => `
+                    <div class="h-item">
+                        <span>T-${c.table} <span class="pay-tag">${c.modePaiement}</span></span>
+                        <strong>${parseFloat(c.total).toFixed(2)}€</strong>
+                    </div>`).join('')}</div>`;
+            }
             hist.innerHTML = hHtml;
         });
 
         function printChef(id) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val(); let t = `<div style="text-align:center;"><h1>TABLE ${o.table}</h1><p>${o.heure}</p><hr></div>`;
-                o.articles.forEach(a => { t += `<div style="margin-bottom:12px; border-bottom:1px dashed #000;"><span style="font-size:1.4rem;">• <strong>${a.nom.toUpperCase()}</strong></span>${a.note ? `<br><span style="font-size:1.1rem; background:#eee; border:1px solid #000;">⚠️ NOTE : ${a.note.toUpperCase()}</span>` : ''}</div>`; });
+                o.articles.forEach(a => { t += `<div style="margin-bottom:10px; border-bottom:1px dashed #000; font-size:1.3rem;">• <strong>${a.nom.toUpperCase()}</strong>${a.note ? `<br><span style="font-size:1rem; background:#ddd; padding:2px;">⚠️ NOTE: ${a.note.toUpperCase()}</span>` : ''}</div>`; });
                 document.getElementById('print-zone').innerHTML = t; window.print();
             });
         }
 
-        function encaisser(id) {
+        function encaisser(id, mode) {
             db.ref('commandes/'+id).once('value', s => {
-                const o = s.val(); let t = `<div style="text-align:center;"><h2>THAI JAP</h2><p>Table ${o.table} | ${o.heure}</p><hr></div>${o.articles.map(a => `<div style="display:flex;justify-content:space-between;"><span>${a.nom}</span><span>${a.prix.toFixed(2)}€</span></div>`).join('')}<hr><div style="display:flex;justify-content:space-between;font-weight:bold;"><span>TOTAL</span><span>${o.total}€</span></div>`;
+                const o = s.val();
+                let t = `<div style="text-align:center;"><h2>THAI JAP</h2><p>Table ${o.table} | ${o.heure}</p><hr></div>
+                ${o.articles.map(a => `<div style="display:flex;justify-content:space-between;"><span>${a.nom}</span><span>${parseFloat(a.prix).toFixed(2)}€</span></div>`).join('')}
+                <hr><div style="display:flex;justify-content:space-between;font-weight:bold;font-size:1.2rem;"><span>TOTAL</span><span>${o.total}€</span></div>
+                <p style="text-align:center;margin-top:10px;">Paiement : <strong>${mode}</strong></p>`;
                 document.getElementById('print-zone').innerHTML = t; window.print();
-                db.ref('commandes/'+id).update({ statut: "Payé", date: new Date().toLocaleDateString('fr-FR') });
+                db.ref('commandes/'+id).update({ statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR') });
             });
         }
     </script>
