@@ -11,27 +11,62 @@
         :root { --red: #BC002D; --black: #121212; --bg: #F8F8F8; --gold: #C5A059; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); padding-bottom: 120px; }
         header { background: var(--black); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 100; }
-        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; }
+        
+        /* SUCCESS PAGE */
+        #success-page { display:none; position:fixed; inset:0; background:white; z-index:1000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
+        #success-page img { width: 150px; margin-bottom: 20px; }
+        
+        /* MENU & CARDS */
         .category-title { background: white; padding: 15px 20px; font-size: 1rem; font-weight: 700; color: var(--red); text-transform: uppercase; margin-top: 10px; border-bottom: 1px solid #eee; }
-        .product-card { background: white; margin: 10px; display: flex; align-items: flex-start; padding: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .img-container { width: 90px; height: 90px; min-width: 90px; margin-right: 12px; border-radius: 10px; overflow: hidden; background: #eee; }
+        .product-card { background: white; margin: 10px; display: flex; padding: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .img-container { width: 90px; height: 90px; min-width: 90px; margin-right: 12px; border-radius: 8px; overflow: hidden; }
         .product-img { width: 100%; height: 100%; object-fit: cover; }
-        .product-info { flex: 1; display: flex; flex-direction: column; }
-        .prod-name { font-weight: 700; font-size: 0.95rem; color: var(--black); }
-        .prod-price { font-weight: 700; color: var(--red); font-size: 0.9rem; margin: 4px 0; }
-        .jap-select { width: 100%; border: 1px solid #ddd; padding: 8px; margin-top: 5px; border-radius: 6px; font-size: 0.85rem; background: #fff; }
-        .note-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 8px 0; margin-top: 8px; font-size: 0.8rem; font-style: italic; outline: none; }
-        .add-btn { background: var(--black); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; font-size: 1.5rem; cursor: pointer; align-self: center; margin-left: 10px; }
+        .product-info { flex: 1; }
+        .prod-name { font-weight: 700; font-size: 0.95rem; display: block; }
+        .jap-select { width: 100%; border: 1px solid #ddd; padding: 8px; margin-top: 5px; border-radius: 6px; font-size: 0.85rem; }
+        .note-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 8px 0; margin-top: 5px; font-size: 0.8rem; font-style: italic; outline: none; }
+        .add-btn { background: var(--black); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 1.5rem; cursor: pointer; margin-left: 10px; }
+
+        /* CART DRAWER */
+        #cart-drawer { position: fixed; bottom: 85px; left: 10px; right: 10px; background: white; border-radius: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); padding: 15px; display: none; max-height: 50vh; overflow-y: auto; z-index: 190; border: 1px solid #eee; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.85rem; }
+        .btn-del { background: none; border: none; color: var(--red); font-weight: bold; cursor: pointer; padding: 5px 10px; }
+
+        /* BOTTOM BAR */
         #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-sizing: border-box; z-index: 200; border-top: 3px solid var(--red); }
-        #btn-commander { background: var(--red); color: white; border: none; padding: 12px 20px; font-weight: 700; border-radius: 5px; cursor: pointer; }
+        #btn-commander { background: var(--red); color: white; border: none; padding: 12px 25px; font-weight: 700; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <header><h1>THAI JAP</h1><div id="table-num" style="color:var(--gold); font-size:0.8rem;">TABLE --</div></header>
+
+    <div id="success-page">
+        <img src="images/logo.png" onerror="this.src='https://via.placeholder.com/150?text=THAI+JAP'">
+        <h2 style="color:var(--red)">COMMANDE REÇUE !</h2>
+        <p>Votre commande est en cours de préparation.<br>Elle sera servie à votre table sous peu.</p>
+        <button onclick="location.reload()" style="margin-top:20px; padding:12px 25px; background:var(--black); color:white; border:none; border-radius:5px;">Retour au menu</button>
+    </div>
+
+    <header>
+        <h1>THAI JAP</h1>
+        <div id="table-num" style="color:var(--gold); font-size:0.8rem; font-weight:700;">TABLE --</div>
+    </header>
+
     <main id="menu-container"></main>
-    <div id="cart-bar" style="display:none;">
-        <div id="cart-info"><span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€<div id="applied-menu" style="color:var(--gold); font-size:0.7rem; margin-top:3px;"></div></div>
-        <button id="btn-commander" onclick="envoyerCommande()">COMMANDER</button>
+
+    <div id="cart-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="margin:0; font-size:1rem;">Ma Sélection</h3>
+            <span onclick="toggleCart()" style="color:var(--red); font-size:0.8rem; font-weight:700;">Fermer</span>
+        </div>
+        <div id="cart-list"></div>
+    </div>
+
+    <div id="cart-bar" style="display:none;" onclick="toggleCart()">
+        <div id="cart-info">
+            <span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€
+            <div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:700;"></div>
+        </div>
+        <button id="btn-commander" onclick="event.stopPropagation(); envoyerCommande()">COMMANDER</button>
     </div>
 
     <script>
@@ -46,7 +81,7 @@
         let panier = [];
         const categories = ["entrees", "sushis", "plats", "boissons", "desserts"];
 
-        db.ref('/').on('value', (snap) => {
+        db.ref('/').on('value', snap => {
             const data = snap.val();
             const container = document.getElementById('menu-container');
             let html = "";
@@ -55,25 +90,16 @@
                 for (let id in data) {
                     const p = data[id];
                     if (id.startsWith('p') && p.categorie === cat && p.dispo !== false) {
-                        let specHtml = "";
-                        if(p.specials) {
-                            const avail = p.specials.filter(s => s.dispo !== false);
-                            if(avail.length > 0) specHtml = `<select id="spec-${id}" class="jap-select">${avail.map(s => `<option value="${s.v}|${s.p}">${s.v} (${s.p.toFixed(2)}€)</option>`).join('')}</select>`;
-                        }
-                        let optHtml = "";
-                        if(p.options) {
-                            const availOpts = p.options.map((o, idx) => (p.optionsDispo && p.optionsDispo[idx] === false) ? "" : `<option value="${o}">${o}</option>`).join('');
-                            if(availOpts.trim() !== "") optHtml = `<select id="opt-${id}" class="jap-select">${availOpts}</select>`;
-                        }
-                        if((p.specials && specHtml==="") || (p.options && optHtml==="")) continue;
-
+                        let specHtml = p.specials ? `<select id="spec-${id}" class="jap-select">${p.specials.filter(s=>s.dispo!==false).map(s=>`<option value="${s.v}|${s.p}">${s.v} (${s.p.toFixed(2)}€)</option>`).join('')}</select>` : "";
+                        let optHtml = p.options ? `<select id="opt-${id}" class="jap-select">${p.options.map((o,i)=>(p.optionsDispo && p.optionsDispo[i]===false)?"":`<option value="${o}">${o}</option>`).join('')}</select>` : "";
+                        
                         catItems += `<div class="product-card">
                             <div class="img-container"><img src="${p.img || 'images/default.png'}" class="product-img" onerror="this.src='https://via.placeholder.com/150?text=ThaiJap'"></div>
                             <div class="product-info">
                                 <span class="prod-name">${p.nom}</span>
-                                <span class="prod-price">${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>
+                                <span style="color:var(--red); font-weight:700; font-size:0.9rem;">${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>
                                 ${optHtml} ${specHtml}
-                                <input type="text" id="note-${id}" placeholder="Note (ex: sans oignon...)" class="note-input">
+                                <input type="text" id="note-${id}" placeholder="Notes..." class="note-input">
                             </div>
                             <button class="add-btn" onclick="ajouter('${id}', '${p.nom}', ${p.prix || 0}, ${!!p.options}, ${!!p.specials}, '${p.categorie}')">+</button>
                         </div>`;
@@ -93,6 +119,16 @@
             calculerPanier();
         }
 
+        function supprimer(index) {
+            panier.splice(index, 1);
+            calculerPanier();
+        }
+
+        function toggleCart() {
+            const d = document.getElementById('cart-drawer');
+            d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+        }
+
         function calculerPanier() {
             let total = 0, temp = [...panier], nT = 0, nG = 0;
             while (true) {
@@ -104,15 +140,29 @@
                 if (iE!==-1 && iS!==-1 && iB!==-1) { nT++; total+=16.9; temp.splice(iS,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
             }
             temp.forEach(i => total += i.prix);
+            
             document.getElementById('cart-count').innerText = panier.length;
             document.getElementById('cart-total').innerText = total.toFixed(2);
             document.getElementById('applied-menu').innerText = (nT>0?nT+" Tokyo ":"") + (nG>0?nG+" Gourmand":"");
             document.getElementById('cart-bar').style.display = panier.length > 0 ? "flex" : "none";
+            
+            let listH = "";
+            panier.forEach((item, idx) => {
+                listH += `<div class="cart-item">
+                    <span>${item.nom}</span>
+                    <div>${item.prix.toFixed(2)}€ <button class="btn-del" onclick="event.stopPropagation(); supprimer(${idx})">✕</button></div>
+                </div>`;
+            });
+            document.getElementById('cart-list').innerHTML = listH;
+            if(panier.length === 0) document.getElementById('cart-drawer').style.display = 'none';
         }
 
         function envoyerCommande() {
             const cmd = { table: table, articles: panier, total: document.getElementById('cart-total').innerText, menu: document.getElementById('applied-menu').innerText, statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) };
-            db.ref('commandes').push(cmd).then(() => { alert("Commande envoyée !"); panier = []; calculerPanier(); });
+            db.ref('commandes').push(cmd).then(() => {
+                document.getElementById('success-page').style.display = 'flex';
+                panier = []; calculerPanier();
+            });
         }
     </script>
 </body>
