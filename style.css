@@ -2,42 +2,46 @@
 :root { --red: #BC002D; --black: #121212; --bg: #F8F8F8; --gold: #C5A059; }
 body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--black); }
 
-/* Splash & Header */
+/* Client */
 #splash-screen { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.8s; }
 .fade-in-logo { width: 120px; }
 .loader-line { width: 40px; height: 1px; background: var(--red); margin-top: 20px; }
 header { background: var(--black); color: white; padding: 40px 20px; text-align: center; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 100; }
-.mini-logo { width: 40px; margin-bottom: 5px; }
-.category-title { text-align: center; margin: 40px 0 20px; letter-spacing: 4px; font-weight: 700; font-size: 0.9rem; position: relative; }
-.category-title::after { content: ""; display: block; width: 20px; height: 1px; background: var(--red); margin: 8px auto; }
-
-/* Client Cards & Selects */
 .product-card { background: white; margin: 15px; display: flex; align-items: center; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-radius: 2px; }
-.product-img { width: 85px; height: 85px; object-fit: cover; margin-right: 18px; background: #eee; }
-.product-info { flex: 1; display: flex; flex-direction: column; margin-right: 10px; }
-.prod-header { display: flex; justify-content: space-between; align-items: baseline; }
-.prod-name { font-weight: 700; font-size: 0.9rem; text-transform: uppercase; }
-.price { color: var(--red); font-weight: 400; }
-.select-wrapper { margin-top: 8px; display: flex; flex-direction: column; }
-.select-wrapper label { font-size: 0.6rem; color: var(--gold); text-transform: uppercase; font-weight: 700; }
-.jap-select, .note-input { border: none; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.8rem; background: transparent; outline: none; }
-.jap-select { appearance: none; background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BC002D' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right center/12px; }
+.product-img { width: 85px; height: 85px; object-fit: cover; margin-right: 18px; }
 .add-btn { background: none; border: 1px solid #eee; width: 45px; height: 45px; font-size: 1.4rem; cursor: pointer; flex-shrink: 0; }
+.jap-select { border: none; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.8rem; background: transparent; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BC002D' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right center; background-size: 12px; width: 100%; }
 
 /* Admin Layout Split */
-.admin-layout { display: flex; height: 100vh; background: #000; color: #fff; }
-.side-stock { width: 300px; border-right: 1px solid #333; display: flex; flex-direction: column; background: #0a0a0a; }
-.main-orders { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-.side-header { padding: 20px; border-bottom: 2px solid var(--red); text-align: center; }
-.side-header h2 { font-size: 0.8rem; letter-spacing: 2px; margin: 0; }
-.stock-scroll { flex: 1; overflow-y: auto; padding: 10px; }
-.stock-card-mini { background: #1a1a1a; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border-radius: 2px; }
-.stock-card-mini button { border: none; padding: 5px 8px; font-size: 0.65rem; font-weight: 700; cursor: pointer; }
-.stock-card-mini button.on { background: #2ecc71; color: #fff; }
-.stock-card-mini button.off { background: #e74c3c; color: #fff; }
-.admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 20px; }
-.order-card-pro { background: #1a1a1a; padding: 20px; border-top: 4px solid var(--red); }
-.menu-tag { background: var(--gold); color: #000; font-size: 0.6rem; padding: 3px 6px; font-weight: 700; margin-bottom: 8px; display: inline-block; }
-.total-price { color: var(--gold); font-weight: 700; }
-#cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); padding: 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gold); z-index: 1000; box-sizing: border-box; }
-#btn-commander { background: var(--red); color: #fff; border: none; padding: 12px 25px; font-weight: 700; letter-spacing: 2px; font-size: 0.7rem; }
+.admin-layout-pro { display: flex; height: 100vh; background: #000; color: #fff; overflow: hidden; }
+.admin-sidebar { background: #1a1a1a; width: 280px; border-right: 1px solid #333; display: flex; flex-direction: column; }
+.admin-main { flex: 1; background: #050505; overflow-y: auto; }
+.history-panel { width: 320px; border-left: 1px solid #333; border-right: none; }
+.panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; }
+.scrollable { flex: 1; overflow-y: auto; padding: 10px; }
+
+/* Accordéon Historique */
+.history-day-header { background: #111; padding: 15px; border-left: 4px solid var(--gold); margin-bottom: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.history-day-details { max-height: 0; overflow: hidden; transition: all 0.4s ease-out; background: #0a0a0a; }
+.history-day-details.active { max-height: 1500px; padding: 10px; border: 1px solid #222; margin-bottom: 15px; }
+.history-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px solid #222; font-size: 0.8rem; }
+.day-total { color: var(--gold); font-weight: 700; font-size: 1.1rem; }
+
+/* Grid & Cards Admin */
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; padding: 20px; }
+.order-card { background: #1a1a1a; padding: 15px; border-top: 5px solid var(--red); border-radius: 4px; }
+.total-row { border-top: 1px solid #333; margin-top: 10px; padding-top: 10px; color: var(--gold); }
+.order-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
+.btn-print { background: #3498db; color: #fff; }
+.btn-cash { background: #2ecc71; color: #fff; }
+.btn-card { background: #9b59b6; color: #fff; }
+.btn-del { background: #e74c3c; color: #fff; grid-column: span 2; }
+
+/* Impression */
+.only-print { display: none; }
+@media print {
+    .no-print { display: none !important; }
+    .only-print { display: block !important; color: #000; font-family: 'Courier Prime', monospace; }
+    .ticket { width: 80mm; padding: 10px; text-align: center; }
+    .t-line { display: flex; justify-content: space-between; margin: 5px 0; }
+}
