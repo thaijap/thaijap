@@ -9,8 +9,8 @@
 </head>
 <body class="admin-body" style="background: #0a0a0a; color: white;">
     <header class="admin-header" style="border-bottom-color: #333;">
-        <h1>TABLEAU DES COMMANDES</h1>
-        <button onclick="toggleStockView()" class="btn-stock-toggle">MODIFIER DISPONIBILITÉS</button>
+        <h1>COMMANDES THAIJAP</h1>
+        <button onclick="toggleStockView()" class="btn-stock-toggle">GESTION STOCK</button>
     </header>
 
     <div id="stock-manager" style="display:none; background:#111; padding:20px; border-bottom:2px solid #333;">
@@ -53,7 +53,7 @@
                         <div class="order-footer">
                             <div class="total-price">${o.total}€</div>
                             <div class="btns">
-                                <button class="btn-ready" onclick="db.ref('commandes/${id}').update({statut:'Prête'})">V</button>
+                                <button class="btn-ready" onclick="db.ref('commandes/${id}').update({statut:'Prête'})">PRÊTE</button>
                                 <button class="btn-del" onclick="if(confirm('Supprimer?'))db.ref('commandes/${id}').remove()">X</button>
                             </div>
                         </div>
