@@ -2,72 +2,54 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Gestion Spécifique</title>
+    <title>Admin ThaiJap | Dashboard Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --red: #BC002D; --black: #121212; --gold: #C5A059; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; overflow: hidden; }
         .admin-layout-pro { display: flex; height: 100vh; }
-        
-        /* 1. STOCKS (PAR GARNITURE) */
         .admin-sidebar { background: #1a1a1a; width: 300px; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .admin-main { flex: 1; background: #050505; overflow-y: auto; }
+        .history-panel { width: 340px; border-left: 1px solid #333; background: #111; }
+        .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; }
+        .scrollable { flex: 1; overflow-y: auto; }
+        
+        /* STOCKS STYLE */
         .stock-group { border-bottom: 1px solid #333; padding-bottom: 5px; }
         .stock-group-title { background: #222; padding: 10px; font-size: 0.8rem; color: var(--gold); font-weight: 700; text-transform: uppercase; }
         .stock-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 0.8rem; }
-        .stock-item button { border: none; padding: 4px 10px; cursor: pointer; color: #fff; font-weight: 700; border-radius: 3px; font-size: 0.7rem; }
+        .stock-item button { border: none; padding: 6px 12px; cursor: pointer; color: #fff; font-weight: 700; border-radius: 4px; font-size: 0.7rem; min-width: 60px; }
         .btn-on { background: #2ecc71; }
         .btn-off { background: #e74c3c; }
 
-        /* 2. COMMANDES (CENTRE) */
-        .admin-main { flex: 1; background: #050505; overflow-y: auto; }
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; padding: 20px; }
+        /* COMMANDES & HISTORIQUE */
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding: 20px; }
         .order-card { background: #1a1a1a; padding: 15px; border-top: 5px solid var(--red); border-radius: 4px; }
-        .table-label { font-size: 1.6rem; color: var(--red); font-weight: 700; }
-        .item-line { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 5px; font-size: 0.9rem; }
-        .item-ctrl button { background: #333; color: #fff; border: 1px solid #444; padding: 2px 8px; cursor: pointer; }
-        
-        /* Actions Boutons */
-        .order-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 15px; }
-        .order-actions button { padding: 10px; font-weight: 700; border: none; cursor: pointer; border-radius: 4px; color: #fff; font-size: 0.75rem; }
-        .btn-chef { background: #3498db; }
-        .btn-esp { background: #2ecc71; }
-        .btn-cb { background: #9b59b6; }
-        .btn-del { background: #e74c3c; grid-column: span 2; }
-
-        /* 3. HISTORIQUE (DROITE) */
-        .history-panel { width: 340px; border-left: 1px solid #333; background: #111; }
         .history-day-header { background: #1a1a1a; padding: 15px; border-left: 4px solid var(--gold); margin-bottom: 5px; cursor: pointer; display: flex; justify-content: space-between; }
-        .history-day-details { max-height: 0; overflow: hidden; transition: 0.3s ease-out; background: #050505; }
-        .history-day-details.active { max-height: 2000px; padding: 10px; border: 1px solid #222; overflow-y: auto; }
-        .history-item { display: flex; justify-content: space-between; padding: 10px 5px; border-bottom: 1px solid #222; font-size: 0.8rem; }
-        
-        .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; }
-        .scrollable { flex: 1; overflow-y: auto; }
-        .only-print { display: none; }
-        @media print { .no-print { display: none !important; } .only-print { display: block !important; color: #000; font-family: 'Courier Prime'; } .ticket { width: 80mm; text-align: center; } }
+        .history-day-details { max-height: 0; overflow: hidden; transition: 0.3s; background: #050505; }
+        .history-day-details.active { max-height: 2000px; padding: 10px; border: 1px solid #222; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.8rem; }
     </style>
 </head>
 <body class="admin-layout-pro">
 
-    <aside class="admin-sidebar no-print">
+    <aside class="admin-sidebar">
         <div class="panel-header">📦 STOCKS DÉTAILLÉS</div>
         <div id="stock-list" class="scrollable"></div>
     </aside>
 
-    <main class="admin-main no-print">
-        <div class="panel-header">🔥 COMMANDES EN COURS</div>
+    <main class="admin-main">
+        <div class="panel-header">🔥 EN COURS</div>
         <div id="admin-grid" class="admin-grid"></div>
     </main>
 
-    <aside class="history-panel no-print">
-        <div class="panel-header">📊 HISTORIQUE VENTES</div>
+    <aside class="history-panel">
+        <div class="panel-header">📊 HISTORIQUE</div>
         <div id="history-list" class="scrollable"></div>
     </aside>
 
-    <div id="print-zone" class="only-print"></div>
     <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
@@ -80,7 +62,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- GESTION DES STOCKS PAR GARNITURE ---
+        // --- GESTION DES STOCKS ---
         db.ref('/').on('value', (snap) => {
             const data = snap.val();
             let h = "";
@@ -89,26 +71,25 @@
                     const p = data[id];
                     h += `<div class="stock-group"><div class="stock-group-title">${p.nom}</div>`;
                     
-                    // Si le produit a des garnitures/viandes (spéciaux)
+                    // Cas 1: Specials (Riz, Nouilles...)
                     if(p.specials) {
                         p.specials.forEach((s, idx) => {
                             const isOff = s.dispo === false;
-                            h += `<div class="stock-item">
-                                <span>${s.v}</span>
-                                <button onclick="db.ref('${id}/specials/${idx}').update({dispo: ${isOff}})" class="${isOff?'btn-off':'btn-on'}">
-                                    ${isOff ? 'OFF' : 'ON'}
-                                </button>
-                            </div>`;
+                            h += `<div class="stock-item"><span>${s.v}</span><button onclick="toggleStock('${id}/specials/${idx}', ${isOff})" class="${isOff?'btn-off':'btn-on'}">${isOff?'OFF':'ON'}</button></div>`;
                         });
-                    } else {
-                        // Produit simple (ex: boissons)
+                    } 
+                    // Cas 2: Options (Nems, Sushis, Boissons...)
+                    else if(p.options) {
+                        p.options.forEach((opt, idx) => {
+                            // On crée une clé 'optionsDispo' pour ne pas écraser le tableau de texte
+                            const isOff = (p.optionsDispo && p.optionsDispo[idx] === false);
+                            h += `<div class="stock-item"><span>${opt}</span><button onclick="toggleOption('${id}', ${idx}, ${isOff})" class="${isOff?'btn-off':'btn-on'}">${isOff?'OFF':'ON'}</button></div>`;
+                        });
+                    }
+                    // Cas 3: Produit Simple
+                    else {
                         const isOff = p.dispo === false;
-                        h += `<div class="stock-item">
-                            <span>Produit</span>
-                            <button onclick="db.ref('${id}').update({dispo: ${isOff}})" class="${isOff?'btn-off':'btn-on'}">
-                                ${isOff ? 'OFF' : 'ON'}
-                            </button>
-                        </div>`;
+                        h += `<div class="stock-item"><span>Produit</span><button onclick="toggleStock('${id}', ${isOff})" class="${isOff?'btn-off':'btn-on'}">${isOff?'OFF':'ON'}</button></div>`;
                     }
                     h += `</div>`;
                 }
@@ -116,87 +97,51 @@
             document.getElementById('stock-list').innerHTML = h;
         });
 
+        function toggleStock(path, currentStatus) {
+            db.ref(path).update({ dispo: !currentStatus });
+        }
+
+        function toggleOption(id, idx, currentStatus) {
+            db.ref(`${id}/optionsDispo/${idx}`).set(!currentStatus);
+        }
+
         // --- COMMANDES ET HISTORIQUE ---
-        let lastCount = 0;
         db.ref('commandes').on('value', (snap) => {
             const data = snap.val();
             const grid = document.getElementById('admin-grid');
-            const historyDiv = document.getElementById('history-list');
-            if(data && Object.keys(data).length > lastCount) document.getElementById('notif').play().catch(()=>{});
-            lastCount = data ? Object.keys(data).length : 0;
+            const hist = document.getElementById('history-list');
             grid.innerHTML = "";
             let groups = {};
 
             for(let id in data) {
                 const o = data[id];
-                const dateCmd = o.date || new Date().toLocaleDateString('fr-FR');
-
+                const d = o.date || new Date().toLocaleDateString('fr-FR');
                 if(o.statut === "Payé") {
-                    if(!groups[dateCmd]) groups[dateCmd] = { total: 0, list: [] };
-                    groups[dateCmd].total += parseFloat(o.total);
-                    groups[dateCmd].list.push(o);
+                    if(!groups[d]) groups[d] = { total: 0, list: [] };
+                    groups[d].total += parseFloat(o.total);
+                    groups[d].list.push(o);
                 } else {
-                    grid.innerHTML += `
-                        <div class="order-card">
-                            <div class="table-label">T-${o.table} <span style="font-size:0.8rem; color:#888;">${o.heure}</span></div>
-                            <div class="order-content">
-                                ${o.articles.map((a, idx) => `<div class="item-line"><span>${a.nom}</span><div class="item-ctrl"><button onclick="mod('${id}', ${idx}, 'plus')">+</button><button onclick="mod('${id}', ${idx}, 'moins')">-</button></div></div>`).join('')}
-                            </div>
-                            <div style="text-align:right; font-weight:700; color:var(--gold); margin:10px 0;">Total: ${o.total}€</div>
-                            <div class="order-actions">
-                                <button class="btn-chef" onclick="pChef('${id}')">CHEF</button>
-                                <button class="btn-esp" onclick="pay('${id}', 'Espèces')">ESP</button>
-                                <button class="btn-cb" onclick="pay('${id}', 'Carte')">CB</button>
-                                <button class="btn-del" onclick="if(confirm('Annuler?'))db.ref('commandes/${id}').remove()">SUPPRIMER</button>
-                            </div>
-                        </div>`;
+                    grid.innerHTML += `<div class="order-card">
+                        <div style="font-size:1.5rem; color:var(--red); font-weight:700;">T-${o.table}</div>
+                        <div style="margin:10px 0;">${o.articles.map(a=>`• ${a.nom}<br>`).join('')}</div>
+                        <div style="font-weight:700; color:var(--gold);">Total: ${o.total}€</div>
+                        <button onclick="db.ref('commandes/${id}').update({statut:'Payé', modePaiement:'Espèces', date:'${new Date().toLocaleDateString('fr-FR')}'})" style="width:100%; margin-top:10px; background:var(--gold); border:none; padding:10px; color:black; font-weight:700; cursor:pointer;">ENCAISSER</button>
+                    </div>`;
                 }
             }
-
-            // Génération de l'historique cliquable
             let hHtml = "";
             for(let date in groups) {
-                hHtml += `
-                    <div class="history-day-wrapper">
-                        <div class="history-day-header" onclick="this.nextElementSibling.classList.toggle('active')">
-                            <strong>📅 ${date}</strong>
-                            <span style="color:var(--gold)">${groups[date].total.toFixed(2)}€</span>
-                        </div>
-                        <div class="history-day-details">
-                            ${groups[date].list.map(cmd => `
-                                <div class="history-item">
-                                    <span>T-${cmd.table} (${cmd.heure}) - ${cmd.modePaiement}</span>
-                                    <strong style="color:#2ecc71">${cmd.total}€</strong>
-                                </div>`).join('')}
-                        </div>
-                    </div>`;
+                hHtml += `<div class="history-day-wrapper">
+                    <div class="history-day-header" onclick="this.nextElementSibling.classList.toggle('active')">
+                        <strong>📅 ${date}</strong><span>${groups[date].total.toFixed(2)}€</span>
+                    </div>
+                    <div class="history-day-details">
+                        ${groups[date].list.map(c=>`<div class="history-item"><span>T-${c.table} (${c.heure})</span><strong>${c.total}€</strong></div>`).join('')}
+                    </div>
+                </div>`;
             }
-            historyDiv.innerHTML = hHtml;
+            hist.innerHTML = hHtml;
         });
-
-        // FONCTIONS
-        function mod(cid, idx, act) {
-            db.ref(`commandes/${cid}`).once('value', (s) => {
-                let c = s.val();
-                if(act==='plus') c.articles.push({...c.articles[idx]}); else c.articles.splice(idx,1);
-                let nt = c.articles.reduce((s,a)=>s+a.prix,0).toFixed(2);
-                db.ref(`commandes/${cid}`).update({articles:c.articles, total:nt});
-            });
-        }
-        function pay(id, mode) {
-            db.ref(`commandes/${id}`).once('value', (s) => {
-                const o = s.val();
-                db.ref(`commandes/${id}`).update({statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR')});
-            });
-        }
-        function pChef(id) {
-            db.ref(`commandes/${id}`).once('value', (s) => {
-                const o = s.val();
-                let c = `<h1>TABLE ${o.table}</h1><hr>`;
-                o.articles.forEach(a => { c += `<h2>• ${a.nom}</h2>${a.note ? `<p>${a.note}</p>` : ''}`; });
-                document.getElementById('print-zone').innerHTML = c; window.print();
-            });
-        }
     </script>
 </body>
 </html>
