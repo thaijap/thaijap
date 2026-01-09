@@ -2,23 +2,22 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Cuisine ThaiJap - Admin</title>
+    <title>Cuisine Admin | ThaiJap</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="admin-body">
-    <header class="admin-header">
-        <h1>IKIGAI COMMANDES</h1>
-        <button onclick="toggleStockView()" class="btn-stock-toggle">Gérer le Stock</button>
+<body class="admin-body" style="background: #0a0a0a; color: white;">
+    <header class="admin-header" style="border-bottom-color: #333;">
+        <h1>TABLEAU DES COMMANDES</h1>
+        <button onclick="toggleStockView()" class="btn-stock-toggle">MODIFIER DISPONIBILITÉS</button>
     </header>
 
-    <div id="stock-manager" style="display:none; background:white; padding:20px; border-bottom:4px solid var(--red-jap);">
-        <h2 style="color:black">Disponibilité des produits</h2>
+    <div id="stock-manager" style="display:none; background:#111; padding:20px; border-bottom:2px solid #333;">
         <div id="stock-list" class="stock-grid"></div>
     </div>
 
-    <div id="admin-grid" class="admin-grid"></div>
+    <main id="admin-grid" class="admin-grid"></main>
     <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
@@ -31,26 +30,32 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let lastCount = 0;
+        let count = 0;
         db.ref('commandes').on('value', (snap) => {
             const data = snap.val();
-            if(data && Object.keys(data).length > lastCount) document.getElementById('notif').play().catch(()=>{});
-            lastCount = data ? Object.keys(data).length : 0;
+            if(data && Object.keys(data).length > count) document.getElementById('notif').play().catch(()=>{});
+            count = data ? Object.keys(data).length : 0;
+
             const container = document.getElementById('admin-grid');
             container.innerHTML = "";
             for(let id in data) {
                 const o = data[id];
                 container.innerHTML += `
-                    <div class="order-card ${o.statut==='Prête'?'ready':''}">
-                        <div class="order-header"><span>TABLE ${o.table}</span><span>${o.heure}</span></div>
-                        ${o.menu ? `<div class="menu-label">${o.menu}</div>` : ''}
-                        <ul class="order-items">
-                            ${o.articles.map(a => `<li><strong>${a.nom}</strong>${a.note ? `<br><span class="note-text">📝 ${a.note}</span>` : ''}</li>`).join('')}
+                    <div class="order-card-pro ${o.statut==='Prête'?'ready-pro':''}">
+                        <div class="order-header">
+                            <span class="table-num">TABLE ${o.table}</span>
+                            <span class="time">${o.heure}</span>
+                        </div>
+                        ${o.menu ? `<div class="menu-tag">${o.menu}</div>` : ''}
+                        <ul class="items-list">
+                            ${o.articles.map(a => `<li><strong>${a.nom}</strong>${a.note ? `<br><small>💡 ${a.note}</small>` : ''}</li>`).join('')}
                         </ul>
-                        <div class="order-total">TOTAL: ${o.total}€</div>
-                        <div class="actions">
-                            <button onclick="db.ref('commandes/${id}').update({statut:'Prête'})">PRÊTE</button>
-                            <button onclick="if(confirm('Supprimer?'))db.ref('commandes/${id}').remove()" class="del">X</button>
+                        <div class="order-footer">
+                            <div class="total-price">${o.total}€</div>
+                            <div class="btns">
+                                <button class="btn-ready" onclick="db.ref('commandes/${id}').update({statut:'Prête'})">V</button>
+                                <button class="btn-del" onclick="if(confirm('Supprimer?'))db.ref('commandes/${id}').remove()">X</button>
+                            </div>
                         </div>
                     </div>`;
             }
@@ -65,21 +70,24 @@
         function chargerStock() {
             db.ref('/').once('value', (snap) => {
                 const data = snap.val();
-                let html = "";
+                let h = "";
                 for(let id in data) {
                     if(id.startsWith('p')) {
                         const isOff = data[id].dispo === false;
-                        html += `<div class="stock-item"><span>${data[id].nom}</span>
-                            <button onclick="toggleProd('${id}', ${isOff})" style="background:${isOff?'#ff4d4d':'#2ecc71'}">
-                            ${isOff ? 'INDISPO' : 'EN STOCK'}</button></div>`;
+                        h += `<div class="stock-item-pro">
+                            <span>${data[id].nom}</span>
+                            <button onclick="toggleProd('${id}', ${isOff})" class="${isOff?'off':'on'}">
+                                ${isOff ? 'INDISPO' : 'EN STOCK'}
+                            </button>
+                        </div>`;
                     }
                 }
-                document.getElementById('stock-list').innerHTML = html;
+                document.getElementById('stock-list').innerHTML = h;
             });
         }
 
-        function toggleProd(id, currentlyOff) {
-            db.ref(id).update({dispo: currentlyOff}).then(() => chargerStock());
+        function toggleProd(id, off) {
+            db.ref(id).update({dispo: off}).then(() => chargerStock());
         }
     </script>
 </body>
