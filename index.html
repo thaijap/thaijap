@@ -6,126 +6,35 @@
     <title>ThaiJap | Menu</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --red: #BC002D; --black: #121212; --bg: #F8F8F8; --gold: #C5A059; }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--black); }
-
-        /* HEADER ÉPURÉ */
-        header { 
-            background: var(--black); 
-            color: white; 
-            padding: 15px; 
-            text-align: center; 
-            border-bottom: 4px solid var(--red); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-        }
-        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 3px; font-weight: 700; }
-        .table-badge { font-size: 0.85rem; color: var(--gold); margin-top: 5px; font-weight: 400; }
-
-        /* MENU CONTENU */
-        #menu-container { padding-bottom: 80px; }
-        .category-title { 
-            background: #fff; 
-            padding: 15px 20px; 
-            font-size: 1rem; 
-            font-weight: 700; 
-            color: var(--red); 
-            text-transform: uppercase; 
-            border-bottom: 1px solid #eee;
-            margin-top: 10px;
-        }
-        .product-card { 
-            background: white; 
-            margin: 10px; 
-            display: flex; 
-            align-items: center; 
-            padding: 15px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-        }
-        .product-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px; }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); padding-bottom: 100px; }
+        header { background: var(--black); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 100; }
+        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; }
+        .category-title { background: white; padding: 15px 20px; font-size: 1rem; font-weight: 700; color: var(--red); text-transform: uppercase; margin-top: 10px; border-bottom: 1px solid #eee; }
+        .product-card { background: white; margin: 10px; display: flex; align-items: center; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .product-info { flex: 1; }
-        .prod-name { font-weight: 700; font-size: 1rem; display: block; margin-bottom: 4px; }
-        .price { color: var(--black); font-weight: 700; font-size: 0.95rem; }
-        
-        .jap-select { 
-            width: 100%; 
-            border: 1px solid #eee; 
-            padding: 10px; 
-            margin-top: 8px; 
-            border-radius: 6px; 
-            font-size: 0.85rem; 
-            background-color: #fafafa;
-        }
-        .note-input { 
-            width: 100%; 
-            border: none; 
-            border-bottom: 1px solid #eee; 
-            padding: 8px 0; 
-            margin-top: 8px; 
-            font-size: 0.8rem; 
-            font-style: italic;
-        }
-        .add-btn { 
-            background: var(--black); 
-            color: white; 
-            border: none; 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 10px; 
-            font-size: 1.6rem; 
-            cursor: pointer; 
-            margin-left: 10px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* BARRE DE PANIER */
-        #cart-bar { 
-            position: fixed; 
-            bottom: 0; 
-            width: 100%; 
-            background: var(--black); 
-            color: white; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px 25px; 
-            box-sizing: border-box; 
-            z-index: 200; 
-            border-top: 3px solid var(--red); 
-        }
-        #btn-commander { 
-            background: var(--red); 
-            color: white;
-            border: none; 
-            padding: 12px 25px; 
-            font-weight: 700; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .prod-name { font-weight: 700; display: block; }
+        .jap-select { width: 100%; border: 1px solid #ddd; padding: 10px; margin-top: 8px; border-radius: 6px; }
+        .note-input { width: 100%; border: none; border-bottom: 1px solid #ddd; padding: 8px 0; margin-top: 8px; font-size: 0.8rem; font-style: italic; outline: none; }
+        .add-btn { background: var(--black); color: white; border: none; width: 45px; height: 45px; border-radius: 8px; font-size: 1.5rem; cursor: pointer; margin-left: 10px; }
+        #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-sizing: border-box; z-index: 200; border-top: 3px solid var(--red); }
+        #btn-commander { background: var(--red); color: white; border: none; padding: 12px 20px; font-weight: 700; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <header>
         <h1>THAI JAP</h1>
-        <div class="table-badge">TABLE <span id="display-table">--</span></div>
+        <div id="table-num" style="font-size: 0.8rem; color: var(--gold);">TABLE --</div>
     </header>
 
     <main id="menu-container"></main>
 
     <div id="cart-bar" style="display:none;">
         <div id="cart-info">
-            <span id="cart-count">0</span> SÉLECTION(S) | <span id="cart-total">0.00</span>€
-            <div id="applied-menu" style="color:var(--gold); font-size:0.75rem; font-weight:700; margin-top:2px;"></div>
+            <span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€
+            <div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:700; margin-top:3px;"></div>
         </div>
         <button id="btn-commander" onclick="envoyerCommande()">COMMANDER</button>
     </div>
@@ -141,104 +50,75 @@
         const db = firebase.database();
 
         const params = new URLSearchParams(window.location.search);
-        const tableId = params.get('table') || "Emporter";
-        document.getElementById('display-table').innerText = tableId;
+        const table = params.get('table') || "Emporter";
+        document.getElementById('table-num').innerText = "TABLE " + table;
 
         let panier = [];
         const categories = ["entrees", "sushis", "plats", "boissons", "desserts"];
 
-        // CHARGEMENT SYNCHRONISÉ AVEC L'ADMIN
         db.ref('/').on('value', (snap) => {
             const data = snap.val();
             const container = document.getElementById('menu-container');
             let html = "";
-
             categories.forEach(cat => {
                 let catItems = "";
                 for (let id in data) {
                     const p = data[id];
                     if (id.startsWith('p') && p.categorie === cat && p.dispo !== false) {
-                        
                         let specHtml = "";
                         if(p.specials) {
                             const avail = p.specials.filter(s => s.dispo !== false);
-                            if(avail.length > 0) {
-                                specHtml = `<select id="spec-${id}" class="jap-select">
-                                    ${avail.map(s => `<option value="${s.v}|${s.p}">${s.v} (${s.p.toFixed(2)}€)</option>`).join('')}
-                                </select>`;
-                            }
+                            if(avail.length > 0) specHtml = `<select id="spec-${id}" class="jap-select">${avail.map(s => `<option value="${s.v}|${s.p}">${s.v} (${s.p.toFixed(2)}€)</option>`).join('')}</select>`;
                         }
-
                         let optHtml = "";
                         if(p.options) {
-                            const availOpts = p.options.map((o, idx) => {
-                                const off = (p.optionsDispo && p.optionsDispo[idx] === false);
-                                return off ? "" : `<option value="${o}">${o}</option>`;
-                            }).join('');
+                            const availOpts = p.options.map((o, idx) => (p.optionsDispo && p.optionsDispo[idx] === false) ? "" : `<option value="${o}">${o}</option>`).join('');
                             if(availOpts.trim() !== "") optHtml = `<select id="opt-${id}" class="jap-select">${availOpts}</select>`;
                         }
-
-                        // Masquer si toutes les options sont OFF
                         if((p.specials && specHtml==="") || (p.options && optHtml==="")) continue;
-
-                        catItems += `<div class="product-card">
-                            ${p.img ? `<img src="${p.img}" class="product-img">` : ''}
-                            <div class="product-info">
-                                <span class="prod-name">${p.nom}</span>
-                                <span class="price">${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>
-                                ${optHtml} ${specHtml}
-                                <input type="text" id="note-${id}" placeholder="Note ou préférence..." class="note-input">
-                            </div>
-                            <button class="add-btn" onclick="ajouter('${id}', '${p.nom}', ${p.prix || 0}, ${!!p.options}, ${!!p.specials}, '${p.categorie}')">+</button>
-                        </div>`;
+                        catItems += `<div class="product-card"><div class="product-info"><span class="prod-name">${p.nom}</span><span>${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>${optHtml} ${specHtml}<input type="text" id="note-${id}" placeholder="Note ou préférence..." class="note-input"></div><button class="add-btn" onclick="ajouter('${id}', '${p.nom}', ${p.prix || 0}, ${!!p.options}, ${!!p.specials}, '${p.categorie}')">+</button></div>`;
                     }
                 }
-                if(catItems) html += `<h2 class="category-title">${cat}</h2>` + catItems;
+                if(catItems) html += `<div class="category-title">${cat}</div>` + catItems;
             });
             container.innerHTML = html;
         });
 
         function ajouter(id, nom, prix, hasOpt, hasSpec, cat) {
             let n = nom; let pFinal = prix;
+            let noteClient = document.getElementById('note-' + id).value;
             if(hasOpt) n += " (" + document.getElementById('opt-'+id).value + ")";
-            if(hasSpec) {
-                const s = document.getElementById('spec-'+id).value.split('|');
-                n += " " + s[0]; pFinal = parseFloat(s[1]);
-            }
-            panier.push({nom: n, prix: pFinal, categorie: cat, note: document.getElementById('note-'+id).value});
-            document.getElementById('note-'+id).value = "";
-            calculer();
+            if(hasSpec) { const s = document.getElementById('spec-'+id).value.split('|'); n += " " + s[0]; pFinal = parseFloat(s[1]); }
+            panier.push({nom: n, prix: pFinal, categorie: cat, note: noteClient});
+            document.getElementById('note-' + id).value = "";
+            calculerPanier();
         }
 
-        function calculer() {
-            let total = panier.reduce((s, i) => s + i.prix, 0);
-            let msg = "";
-            const ents = panier.filter(i => i.categorie === "entrees");
-            const sush = panier.filter(i => i.categorie === "sushis");
-            const bois = panier.filter(i => i.categorie === "boissons");
-            const plat14 = panier.filter(i => i.categorie === "plats" && i.prix === 14.9);
-
-            if(ents.length >= 1 && sush.length >= 1 && bois.length >= 1) {
-                total = total - (ents[0].prix + sush[0].prix + bois[0].prix) + 16.90;
-                msg = "MENU TOKYO ACTIVÉ (16.90€)";
-            } else if (ents.length >= 1 && plat14.length >= 1 && bois.length >= 1) {
-                total = total - (ents[0].prix + plat14[0].prix + bois[0].prix) + 19.90;
-                msg = "MENU GOURMAND ACTIVÉ (19.90€)";
+        function calculerPanier() {
+            let total = 0; let tempPanier = [...panier]; let nbTokyo = 0; let nbGourmand = 0;
+            while (true) {
+                let iE = tempPanier.findIndex(i => i.categorie === "entrees");
+                let iP = tempPanier.findIndex(i => i.categorie === "plats" && i.prix === 14.9);
+                let iB = tempPanier.findIndex(i => i.categorie === "boissons");
+                if (iE!==-1 && iP!==-1 && iB!==-1) { nbGourmand++; total+=19.90; tempPanier.splice(iP,1); tempPanier.splice(tempPanier.findIndex(i=>i.categorie==="entrees"),1); tempPanier.splice(tempPanier.findIndex(i=>i.categorie==="boissons"),1); } else break;
             }
+            while (true) {
+                let iE = tempPanier.findIndex(i => i.categorie === "entrees");
+                let iS = tempPanier.findIndex(i => i.categorie === "sushis");
+                let iB = tempPanier.findIndex(i => i.categorie === "boissons");
+                if (iE!==-1 && iS!==-1 && iB!==-1) { nbTokyo++; total+=16.90; tempPanier.splice(iS,1); tempPanier.splice(tempPanier.findIndex(i=>i.categorie==="entrees"),1); tempPanier.splice(tempPanier.findIndex(i=>i.categorie==="boissons"),1); } else break;
+            }
+            tempPanier.forEach(item => total += item.prix);
+            let labels = []; if(nbTokyo>0) labels.push(nbTokyo+" Tokyo"); if(nbGourmand>0) labels.push(nbGourmand+" Gourmand");
             document.getElementById('cart-count').innerText = panier.length;
             document.getElementById('cart-total').innerText = total.toFixed(2);
-            document.getElementById('applied-menu').innerText = msg;
+            document.getElementById('applied-menu').innerText = labels.join(" | ");
             document.getElementById('cart-bar').style.display = panier.length > 0 ? "flex" : "none";
         }
 
         function envoyerCommande() {
-            const cmd = { 
-                table: tableId, articles: panier, total: document.getElementById('cart-total').innerText,
-                statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
-            };
-            db.ref('commandes').push(cmd).then(() => {
-                alert("Votre commande a été envoyée !"); panier = []; calculer();
-            });
+            const cmd = { table: table, articles: panier, total: document.getElementById('cart-total').innerText, menu: document.getElementById('applied-menu').innerText, statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) };
+            db.ref('commandes').push(cmd).then(() => { alert("Commande envoyée !"); panier = []; calculerPanier(); });
         }
     </script>
 </body>
