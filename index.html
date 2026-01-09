@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ThaiJap | Menu Gastronomique</title>
+    <title>ThaiJap | Menu</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
@@ -12,48 +12,110 @@
         :root { --red: #BC002D; --black: #121212; --bg: #F8F8F8; --gold: #C5A059; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--black); }
 
-        /* SPLASH SCREEN FIX */
-        #splash-screen {
-            position: fixed; inset: 0; background: #fff; z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.8s ease; pointer-events: none;
+        /* HEADER ÉPURÉ */
+        header { 
+            background: var(--black); 
+            color: white; 
+            padding: 15px; 
+            text-align: center; 
+            border-bottom: 4px solid var(--red); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
         }
-        #splash-screen.active { pointer-events: all; opacity: 1; }
-        .fade-in-logo { width: 120px; }
-        .loader-line { width: 40px; height: 2px; background: var(--red); margin-top: 20px; }
+        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 3px; font-weight: 700; }
+        .table-badge { font-size: 0.85rem; color: var(--gold); margin-top: 5px; font-weight: 400; }
 
-        /* HEADER */
-        header { background: var(--black); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 100; }
-        .mini-logo { width: 50px; margin-bottom: 5px; }
-        h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; }
-        .table-badge { font-size: 0.8rem; color: var(--gold); margin-top: 5px; }
-
-        /* MENU */
-        .category-title { background: #eee; padding: 10px 20px; font-size: 0.9rem; font-weight: 700; color: #555; text-transform: uppercase; }
-        .product-card { background: white; margin: 10px; display: flex; align-items: center; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .product-img { width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin-right: 15px; }
+        /* MENU CONTENU */
+        #menu-container { padding-bottom: 80px; }
+        .category-title { 
+            background: #fff; 
+            padding: 15px 20px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: var(--red); 
+            text-transform: uppercase; 
+            border-bottom: 1px solid #eee;
+            margin-top: 10px;
+        }
+        .product-card { 
+            background: white; 
+            margin: 10px; 
+            display: flex; 
+            align-items: center; 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+        }
+        .product-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px; }
         .product-info { flex: 1; }
-        .prod-name { font-weight: 700; font-size: 0.95rem; display: block; }
-        .price { color: var(--red); font-weight: 700; font-size: 0.9rem; }
+        .prod-name { font-weight: 700; font-size: 1rem; display: block; margin-bottom: 4px; }
+        .price { color: var(--black); font-weight: 700; font-size: 0.95rem; }
         
-        .jap-select { width: 100%; border: 1px solid #ddd; padding: 8px; margin-top: 5px; border-radius: 4px; font-size: 0.85rem; }
-        .note-input { width: 90%; border: none; border-bottom: 1px solid #eee; padding: 5px; margin-top: 5px; font-size: 0.8rem; }
-        .add-btn { background: var(--red); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; margin-left: 10px; }
+        .jap-select { 
+            width: 100%; 
+            border: 1px solid #eee; 
+            padding: 10px; 
+            margin-top: 8px; 
+            border-radius: 6px; 
+            font-size: 0.85rem; 
+            background-color: #fafafa;
+        }
+        .note-input { 
+            width: 100%; 
+            border: none; 
+            border-bottom: 1px solid #eee; 
+            padding: 8px 0; 
+            margin-top: 8px; 
+            font-size: 0.8rem; 
+            font-style: italic;
+        }
+        .add-btn { 
+            background: var(--black); 
+            color: white; 
+            border: none; 
+            width: 45px; 
+            height: 45px; 
+            border-radius: 10px; 
+            font-size: 1.6rem; 
+            cursor: pointer; 
+            margin-left: 10px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-        /* CART BAR */
-        #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-sizing: border-box; z-index: 200; border-top: 3px solid var(--gold); }
-        #btn-commander { background: var(--gold); border: none; padding: 10px 20px; font-weight: 700; border-radius: 5px; cursor: pointer; }
+        /* BARRE DE PANIER */
+        #cart-bar { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: var(--black); 
+            color: white; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 25px; 
+            box-sizing: border-box; 
+            z-index: 200; 
+            border-top: 3px solid var(--red); 
+        }
+        #btn-commander { 
+            background: var(--red); 
+            color: white;
+            border: none; 
+            padding: 12px 25px; 
+            font-weight: 700; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
-<body class="loading">
-
-    <div id="splash-screen" class="active">
-        <img src="images/logo.png" alt="ThaiJap" class="fade-in-logo">
-        <div class="loader-line"></div>
-    </div>
+<body>
 
     <header>
-        <img src="images/logo.png" alt="Logo" class="mini-logo">
         <h1>THAI JAP</h1>
         <div class="table-badge">TABLE <span id="display-table">--</span></div>
     </header>
@@ -62,8 +124,8 @@
 
     <div id="cart-bar" style="display:none;">
         <div id="cart-info">
-            <span id="cart-count">0</span> ARTICLES | <span id="cart-total">0.00</span>€
-            <div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:700;"></div>
+            <span id="cart-count">0</span> SÉLECTION(S) | <span id="cart-total">0.00</span>€
+            <div id="applied-menu" style="color:var(--gold); font-size:0.75rem; font-weight:700; margin-top:2px;"></div>
         </div>
         <button id="btn-commander" onclick="envoyerCommande()">COMMANDER</button>
     </div>
@@ -82,13 +144,10 @@
         const tableId = params.get('table') || "Emporter";
         document.getElementById('display-table').innerText = tableId;
 
-        window.onload = () => {
-            setTimeout(() => { document.getElementById('splash-screen').classList.remove('active'); }, 2000);
-        };
-
         let panier = [];
         const categories = ["entrees", "sushis", "plats", "boissons", "desserts"];
 
+        // CHARGEMENT SYNCHRONISÉ AVEC L'ADMIN
         db.ref('/').on('value', (snap) => {
             const data = snap.val();
             const container = document.getElementById('menu-container');
@@ -119,6 +178,7 @@
                             if(availOpts.trim() !== "") optHtml = `<select id="opt-${id}" class="jap-select">${availOpts}</select>`;
                         }
 
+                        // Masquer si toutes les options sont OFF
                         if((p.specials && specHtml==="") || (p.options && optHtml==="")) continue;
 
                         catItems += `<div class="product-card">
@@ -127,13 +187,13 @@
                                 <span class="prod-name">${p.nom}</span>
                                 <span class="price">${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>
                                 ${optHtml} ${specHtml}
-                                <input type="text" id="note-${id}" placeholder="Note..." class="note-input">
+                                <input type="text" id="note-${id}" placeholder="Note ou préférence..." class="note-input">
                             </div>
                             <button class="add-btn" onclick="ajouter('${id}', '${p.nom}', ${p.prix || 0}, ${!!p.options}, ${!!p.specials}, '${p.categorie}')">+</button>
                         </div>`;
                     }
                 }
-                if(catItems) html += `<h2 class="category-title">${cat.toUpperCase()}</h2>` + catItems;
+                if(catItems) html += `<h2 class="category-title">${cat}</h2>` + catItems;
             });
             container.innerHTML = html;
         });
@@ -160,10 +220,10 @@
 
             if(ents.length >= 1 && sush.length >= 1 && bois.length >= 1) {
                 total = total - (ents[0].prix + sush[0].prix + bois[0].prix) + 16.90;
-                msg = "MENU TOKYO (16.90€)";
+                msg = "MENU TOKYO ACTIVÉ (16.90€)";
             } else if (ents.length >= 1 && plat14.length >= 1 && bois.length >= 1) {
                 total = total - (ents[0].prix + plat14[0].prix + bois[0].prix) + 19.90;
-                msg = "MENU GOURMAND (19.90€)";
+                msg = "MENU GOURMAND ACTIVÉ (19.90€)";
             }
             document.getElementById('cart-count').innerText = panier.length;
             document.getElementById('cart-total').innerText = total.toFixed(2);
@@ -177,7 +237,7 @@
                 statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
             };
             db.ref('commandes').push(cmd).then(() => {
-                alert("Commande envoyée !"); panier = []; calculer();
+                alert("Votre commande a été envoyée !"); panier = []; calculer();
             });
         }
     </script>
