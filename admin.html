@@ -2,45 +2,90 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Cuisine - ThaiJap</title>
+    <title>Cuisine ThaiJap - Admin</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background:#1a1a1a; color:white; padding:20px;">
-    <h1>👨‍🍳 Commandes ThaiJap</h1>
-    <div id="admin-grid" class="grid"></div>
+<body class="admin-body">
+    <header class="admin-header">
+        <h1>IKIGAI COMMANDES</h1>
+        <button onclick="toggleStockView()" class="btn-stock-toggle">Gérer le Stock</button>
+    </header>
+
+    <div id="stock-manager" style="display:none; background:#eee; padding:20px; color:black;">
+        <h2>Disponibilité des produits</h2>
+        <div id="stock-list"></div>
+    </div>
+
+    <div id="admin-grid" class="admin-grid"></div>
     <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY",
-            databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "thaijap",
-            appId: "1:84821188454:web:0078ba82b4affbe0abb2a7"
-        };
-        firebase.initializeApp(firebaseConfig);
+        // ... (Config Firebase identique)
         const db = firebase.database();
 
-        let count = 0;
+        // Gestion des commandes
         db.ref('commandes').on('value', (snap) => {
             const data = snap.val();
-            if(data && Object.keys(data).length > count) document.getElementById('notif').play().catch(e=>{});
-            count = data ? Object.keys(data).length : 0;
-
             const container = document.getElementById('admin-grid');
             container.innerHTML = "";
             for(let id in data) {
                 const o = data[id];
                 container.innerHTML += `
-                    <div class="order-card ${o.statut==='Prête'?'ready':''}" style="background:white; color:black; margin:10px; padding:15px; border-radius:10px;">
-                        <h3>TABLE ${o.table} <small>(${o.heure})</small></h3>
-                        <ul>${o.articles.map(a=>`<li>${a.nom}</li>`).join('')}</ul>
-                        <button class="btn-ready" onclick="db.ref('commandes/${id}').update({statut:'Prête'})">PRÊTE</button>
-                        <button class="btn-del" onclick="if(confirm('Supprimer?'))db.ref('commandes/${id}').remove()">X</button>
+                    <div class="order-card ${o.statut==='Prête'?'ready':''}">
+                        <div class="order-header">
+                            <span>TABLE ${o.table}</span>
+                            <span>${o.heure}</span>
+                        </div>
+                        ${o.menu ? `<div class="menu-label">${o.menu}</div>` : ''}
+                        <ul class="order-items">
+                            ${o.articles.map(a => `
+                                <li>
+                                    <strong>${a.nom}</strong>
+                                    ${a.note ? `<br><span class="note-text">📝 ${a.note}</span>` : ''}
+                                </li>`).join('')}
+                        </ul>
+                        <div class="order-total">TOTAL: ${o.total}€</div>
+                        <div class="actions">
+                            <button onclick="db.ref('commandes/${id}').update({statut:'Prête'})">PRÊTE</button>
+                            <button onclick="if(confirm('Supprimer?'))db.ref('commandes/${id}').remove()" class="del">X</button>
+                        </div>
                     </div>`;
             }
         });
+
+        // Gestion du Stock
+        function toggleStockView() {
+            const div = document.getElementById('stock-manager');
+            div.style.display = div.style.display === 'none' ? 'block' : 'none';
+            if(div.style.display === 'block') chargerStock();
+        }
+
+        function chargerStock() {
+            db.ref('/').once('value', (snap) => {
+                const data = snap.val();
+                let html = "";
+                for(let id in data) {
+                    if(id.startsWith('p')) {
+                        const p = data[id];
+                        const isOff = p.dispo === false;
+                        html += `
+                            <div style="margin:5px; padding:10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between;">
+                                <span>${p.nom}</span>
+                                <button onclick="toggleProd('${id}', ${!isOff})" style="background:${isOff?'red':'green'}; color:white">
+                                    ${isOff ? 'DÉSACTIVÉ' : 'ACTIF'}
+                                </button>
+                            </div>`;
+                    }
+                }
+                document.getElementById('stock-list').innerHTML = html;
+            });
+        }
+
+        function toggleProd(id, newState) {
+            db.ref(id).update({dispo: newState}).then(() => chargerStock());
+        }
     </script>
 </body>
 </html>
