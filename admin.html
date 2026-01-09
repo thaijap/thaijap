@@ -2,21 +2,28 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Dashboard</title>
+    <title>Admin ThaiJap | Dashboard & Historique</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body class="admin-layout">
-    <aside class="side-stock">
-        <div class="side-header"><h2>📦 STOCKS</h2></div>
-        <div id="stock-list" class="stock-scroll"></div>
+<body class="admin-layout-pro">
+
+    <aside class="admin-sidebar stock-panel">
+        <div class="panel-header">📦 STOCKS</div>
+        <div id="stock-list" class="scrollable"></div>
     </aside>
 
-    <main class="main-orders">
-        <div class="side-header"><h2>🔥 COMMANDES</h2></div>
+    <main class="admin-main orders-panel">
+        <div class="panel-header">🔥 COMMANDES EN COURS</div>
         <div id="admin-grid" class="admin-grid"></div>
     </main>
+
+    <aside class="admin-sidebar history-panel">
+        <div class="panel-header">📊 HISTORIQUE & CA</div>
+        <div id="history-list" class="scrollable"></div>
+    </aside>
 
     <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
@@ -30,45 +37,112 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function chargerStock() {
-            db.ref('/').on('value', (snap) => {
-                const data = snap.val(); let h = "";
-                for(let id in data) {
-                    if(id.startsWith('p')) {
-                        const isOff = data[id].dispo === false;
-                        h += `<div class="stock-card-mini"><span>${data[id].nom}</span>
-                            <button onclick="db.ref('${id}').update({dispo: ${isOff}})" class="${isOff?'off':'on'}">
-                            ${isOff ? 'INDISPO' : 'STOCK'}</button></div>`;
-                    }
+        // --- GESTION DES STOCKS ---
+        db.ref('/').on('value', (snap) => {
+            const data = snap.val();
+            let h = "";
+            for(let id in data) {
+                if(id.startsWith('p')) {
+                    const isOff = data[id].dispo === false;
+                    h += `<div class="stock-item">
+                        <span>${data[id].nom}</span>
+                        <button onclick="db.ref('${id}').update({dispo: ${isOff}})" class="${isOff?'off':'on'}">
+                            ${isOff ? 'OFF' : 'ON'}
+                        </button>
+                    </div>`;
                 }
-                document.getElementById('stock-list').innerHTML = h;
-            });
-        }
+            }
+            document.getElementById('stock-list').innerHTML = h;
+        });
 
-        let count = 0;
+        // --- GESTION COMMANDES & HISTORIQUE ---
+        let lastCount = 0;
         db.ref('commandes').on('value', (snap) => {
             const data = snap.val();
-            if(data && Object.keys(data).length > count) document.getElementById('notif').play().catch(()=>{});
-            count = data ? Object.keys(data).length : 0;
-            const container = document.getElementById('admin-grid');
-            container.innerHTML = "";
+            const grid = document.getElementById('admin-grid');
+            const historyDiv = document.getElementById('history-list');
+            
+            if(data && Object.keys(data).length > lastCount) document.getElementById('notif').play().catch(()=>{});
+            lastCount = data ? Object.keys(data).length : 0;
+
+            grid.innerHTML = "";
+            let historyData = {}; // Pour grouper par jour
+
             for(let id in data) {
                 const o = data[id];
-                container.innerHTML += `
-                    <div class="order-card-pro ${o.statut==='Prête'?'ready-pro':''}">
-                        <div class="order-header"><span class="table-num">T-${o.table}</span><span class="time">${o.heure}</span></div>
-                        ${o.menu ? `<div class="menu-tag">${o.menu}</div>` : ''}
-                        <ul class="items-list">${o.articles.map(a => `<li><strong>${a.nom}</strong>${a.note ? `<br><small>💡 ${a.note}</small>` : ''}</li>`).join('')}</ul>
-                        <div class="order-footer"><span class="total-price">${o.total}€</span>
-                            <div class="btns">
-                                <button class="btn-ready" onclick="db.ref('commandes/${id}').update({statut:'Prête'})">V</button>
-                                <button class="btn-del" onclick="if(confirm('Supprimer?'))db.ref('commandes/${id}').remove()">X</button>
+                const dateCmd = o.date || new Date().toLocaleDateString('fr-FR');
+
+                if(o.statut === "Servi") {
+                    // Calcul Historique
+                    if(!historyData[dateCmd]) historyData[dateCmd] = { total: 0, count: 0 };
+                    historyData[dateCmd].total += parseFloat(o.total);
+                    historyData[dateCmd].count++;
+                } else {
+                    // Affichage Commandes Actives
+                    grid.innerHTML += `
+                        <div class="order-card">
+                            <div class="order-top">
+                                <span class="table-label">TABLE ${o.table}</span>
+                                <span class="order-time">${o.heure}</span>
                             </div>
+                            <div class="order-content">
+                                ${o.articles.map(a => `<div>• ${a.nom} ${a.note ? `<small>(${a.note})</small>` : ''}</div>`).join('')}
+                            </div>
+                            <div class="order-actions">
+                                <span>${o.total}€</span>
+                                <button class="btn-serve" onclick="db.ref('commandes/${id}').update({statut:'Servi', date: '${new Date().toLocaleDateString('fr-FR')}'})">SERVI</button>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            // Affichage de l'historique
+            let hHtml = "";
+            for(let date in historyData) {
+                hHtml += `
+                    <div class="history-day">
+                        <div class="day-header">
+                            <strong>${date}</strong>
+                            <span class="day-total">${historyData[date].total.toFixed(2)}€</span>
                         </div>
+                        <small>${historyData[date].count} commandes servies</small>
                     </div>`;
             }
+            historyDiv.innerHTML = hHtml;
         });
-        chargerStock();
     </script>
+
+    <style>
+        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --dark-grey: #1a1a1a; }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; overflow: hidden; }
+        
+        .admin-layout-pro { display: flex; height: 100vh; }
+        .admin-sidebar { background: var(--dark-grey); display: flex; flex-direction: column; border-right: 1px solid #333; }
+        .panel-header { padding: 20px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; letter-spacing: 2px; }
+        .scrollable { flex: 1; overflow-y: auto; padding: 10px; }
+
+        /* Stock (Gauche) */
+        .stock-panel { width: 250px; }
+        .stock-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; font-size: 0.8rem; }
+        .stock-item button { border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: 700; }
+        .stock-item button.on { background: #2ecc71; color: #fff; }
+        .stock-item button.off { background: #e74c3c; color: #fff; }
+
+        /* Commandes (Centre) */
+        .orders-panel { flex: 1; background: #050505; }
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 20px; }
+        .order-card { background: var(--dark-grey); border-radius: 5px; border-top: 5px solid var(--red); padding: 15px; display: flex; flex-direction: column; }
+        .order-top { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .table-label { font-weight: 700; color: var(--red); font-size: 1.2rem; }
+        .order-content { flex: 1; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px; }
+        .order-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; pt: 10px; }
+        .btn-serve { background: var(--gold); border: none; padding: 8px 15px; font-weight: 700; cursor: pointer; }
+
+        /* Historique (Droite) */
+        .history-panel { width: 300px; border-left: 1px solid #333; }
+        .history-day { background: #111; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--gold); }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .day-total { color: var(--gold); font-size: 1.1rem; font-weight: 700; }
+    </style>
 </body>
 </html>
