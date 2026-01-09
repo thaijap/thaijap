@@ -18,15 +18,15 @@
     <header>
         <img src="images/logo.png" alt="Logo ThaiJap" class="mini-logo">
         <h1>THAI JAP</h1>
-        <div class="table-badge">Expérience Table <span id="display-table">--</span></div>
+        <div class="table-badge">Table <span id="display-table">--</span></div>
     </header>
 
     <main id="menu-container"></main>
 
     <div id="cart-bar" style="display:none;">
         <div id="cart-info">
-            <span id="cart-count">0</span> SÉLECTION(S) | <span id="cart-total">0.00</span>€
-            <div id="applied-menu" style="color:var(--gold); font-size:0.75rem; margin-top:3px; font-weight:700;"></div>
+            <span id="cart-count">0</span> SÉLECTIONS | <span id="cart-total">0.00</span>€
+            <div id="applied-menu" style="color:var(--gold); font-size:0.7rem; margin-top:3px; font-weight:700;"></div>
         </div>
         <button id="btn-commander" onclick="envoyerCommande()">COMMANDER</button>
     </div>
@@ -48,11 +48,12 @@
         const tableId = params.get('table') || "Emporter";
         document.getElementById('display-table').innerText = tableId;
 
+        // Timer Splash Screen
         window.addEventListener('load', () => {
             setTimeout(() => { 
                 document.getElementById('splash-screen').style.opacity = '0'; 
                 setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 500);
-            }, 2500);
+            }, 2000);
         });
 
         let panier = [];
@@ -67,7 +68,36 @@
                 let catItems = "";
                 for (let id in data) {
                     const p = data[id];
+                    // On n'affiche le produit que s'il n'est pas désactivé globalement
                     if (id.startsWith('p') && p.categorie === cat && p.dispo !== false) {
+                        
+                        // Filtrer les Specials (Garnitures) disponibles
+                        let specialsHtml = "";
+                        if(p.specials) {
+                            const availableSpecials = p.specials.filter(s => s.dispo !== false);
+                            if(availableSpecials.length > 0) {
+                                specialsHtml = `<div class="select-wrapper"><label>Garniture</label><select id="spec-${id}" class="jap-select">
+                                    ${availableSpecials.map(s => `<option value="${s.v}|${s.p}">${s.v} — ${s.p.toFixed(2)}€</option>`).join('')}
+                                </select></div>`;
+                            }
+                        }
+
+                        // Filtrer les Options disponibles
+                        let optionsHtml = "";
+                        if(p.options) {
+                            const optsHtml = p.options.map((opt, idx) => {
+                                const isOff = (p.optionsDispo && p.optionsDispo[idx] === false);
+                                return isOff ? "" : `<option value="${opt}">${opt}</option>`;
+                            }).join('');
+                            
+                            if(optsHtml.trim() !== "") {
+                                optionsHtml = `<div class="select-wrapper"><label>Option</label><select id="opt-${id}" class="jap-select">${optsHtml}</select></div>`;
+                            }
+                        }
+
+                        // Si le produit a des options/specials mais qu'elles sont TOUTES en OFF, on ne l'affiche pas
+                        if((p.specials && specialsHtml==="") || (p.options && optionsHtml==="")) continue;
+
                         catItems += `
                             <div class="product-card">
                                 ${p.img ? `<img src="${p.img}" class="product-img" loading="lazy">` : ''}
@@ -76,8 +106,8 @@
                                         <span class="prod-name">${p.nom}</span>
                                         <span class="price">${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>
                                     </div>
-                                    ${p.options ? `<div class="select-wrapper"><label>Option</label><select id="opt-${id}" class="jap-select">${p.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select></div>` : ''}
-                                    ${p.specials ? `<div class="select-wrapper"><label>Garniture</label><select id="spec-${id}" class="jap-select">${p.specials.map(s => `<option value="${s.v}|${s.p}">${s.v} — ${s.p.toFixed(2)}€</option>`).join('')}</select></div>` : ''}
+                                    ${optionsHtml}
+                                    ${specialsHtml}
                                     <input type="text" id="note-${id}" placeholder="Note (ex: Sans oignons...)" class="note-input">
                                 </div>
                                 <button class="add-btn" onclick="ajouter('${id}', '${p.nom}', ${p.prix || 0}, ${!!p.options}, ${!!p.specials}, '${p.categorie}')">+</button>
@@ -90,12 +120,19 @@
         });
 
         function ajouter(id, nom, prix, hasOpt, hasSpec, cat) {
-            let n = nom; let pFinal = prix; let note = document.getElementById('note-'+id).value;
-            if(hasOpt) n += " (" + document.getElementById('opt-'+id).value + ")";
-            if(hasSpec) {
-                const parts = document.getElementById('spec-'+id).value.split('|');
-                n += " " + parts[0]; pFinal = parseFloat(parts[1]);
+            let n = nom; let pFinal = prix; 
+            let note = document.getElementById('note-'+id).value;
+            
+            if(hasOpt) {
+                const optVal = document.getElementById('opt-'+id).value;
+                n += " (" + optVal + ")";
             }
+            if(hasSpec) {
+                const specData = document.getElementById('spec-'+id).value.split('|');
+                n += " " + specData[0]; 
+                pFinal = parseFloat(specData[1]);
+            }
+            
             panier.push({nom: n, prix: pFinal, categorie: cat, note: note});
             document.getElementById('note-'+id).value = "";
             calculerPanier();
@@ -129,7 +166,7 @@
                 heure: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
             };
             db.ref('commandes').push(cmd).then(() => {
-                alert("Commande envoyée au chef !");
+                alert("Itadakimasu ! Commande envoyée.");
                 panier = []; calculerPanier();
             });
         }
