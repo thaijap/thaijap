@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Dashboard</title>
+    <title>Admin ThaiJap | Gestion & Encaissement</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
@@ -31,34 +31,41 @@
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left:0; top:0; width: 100%; display: block !important; color: black; font-family: 'Courier Prime', monospace; }
+            #print-area { position: absolute; left:0; top:0; width: 100%; display: block !important; color: black; font-family: 'Courier Prime', monospace; padding: 20px; }
+            .print-center { text-align: center; }
+            .print-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
         }
     </style>
 </head>
 <body>
     <div id="print-area"></div>
 
-    <aside class="sidebar no-print">
+    <aside class="sidebar">
         <div class="panel-header">📦 STOCKS</div>
         <div id="stock-list"></div>
     </aside>
 
-    <main class="main no-print">
-        <div class="panel-header">🔥 EN COURS</div>
+    <main class="main">
+        <div class="panel-header">🔥 COMMANDES EN COURS</div>
         <div id="order-list"></div>
     </main>
 
-    <aside class="history no-print">
-        <div class="panel-header">📊 HISTORIQUE</div>
+    <aside class="history">
+        <div class="panel-header">📊 HISTORIQUE JOURNALIER</div>
         <div id="history-list"></div>
     </aside>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", projectId: "thaijap", appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", 
+            databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", 
+            projectId: "thaijap", 
+            appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // GESTION DES STOCKS PAR VARIANTE
+        // 1. GESTION DES STOCKS
         db.ref('/').on('value', snap => {
             const data = snap.val(); let h = "";
             ["entrees", "sushis", "plats", "boissons", "desserts"].forEach(cat => {
@@ -87,7 +94,7 @@
             document.getElementById('stock-list').innerHTML = h;
         });
 
-        // COMMANDES & IMPRESSIONS
+        // 2. COMMANDES & AFFICHAGE
         db.ref('commandes').on('value', snap => {
             const data = snap.val(); let oH = "", hH = ""; let totaux = {};
             for(let id in data) {
@@ -98,14 +105,14 @@
                 } else {
                     oH += `<div class="order-card">
                         <div style="font-weight:700; color:var(--red);">TABLE ${o.table} <span style="float:right; color:#666;">${o.heure}</span></div>
-                        <div style="margin:10px 0; font-size:0.85rem; line-height:1.4;">
+                        <div style="margin:10px 0; font-size:0.85rem;">
                             ${o.articles.map(a => `• <strong>${a.nom}</strong>${a.note?' <br><i style="color:var(--green)">Note: '+a.note+'</i>':''}`).join('<br>')}
                         </div>
                         <div style="text-align:right; font-weight:700; margin-bottom:10px;">TOTAL: ${o.total}€</div>
-                        <button class="btn-chef" onclick="imprimerChef('${id}')">👨‍🍳 IMPRIMER CUISINE</button>
+                        <button class="btn-chef" onclick="imprimerChef('${id}')">👨‍🍳 TICKET CUISINE</button>
                         <div style="display:flex; justify-content:space-between;">
-                            <button class="btn-pay" style="background:var(--green);" onclick="payer('${id}','ESP')">ESPÈCES</button>
-                            <button class="btn-pay" style="background:#9b59b6;" onclick="payer('${id}','CB')">CARTE</button>
+                            <button class="btn-pay" style="background:var(--green);" onclick="encaisser('${id}','ESPECES')">💶 ESPÈCES</button>
+                            <button class="btn-pay" style="background:var(--blue);" onclick="encaisser('${id}','CB')">💳 CARTE (CB)</button>
                         </div>
                     </div>`;
                 }
@@ -115,14 +122,15 @@
             document.getElementById('history-list').innerHTML = histFinal + hH;
         });
 
+        // 3. FONCTION IMPRESSION CUISINE (GRANDES LETTRES + NOTES)
         function imprimerChef(id) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
-                let html = `<div style="text-align:center;"><h1 style="font-size:35pt;">TABLE ${o.table}</h1><p>${o.heure}</p><hr></div>`;
+                let html = `<div class="print-center"><h1 style="font-size:40pt; margin:0;">TABLE ${o.table}</h1><p>${o.heure}</p></div><hr>`;
                 o.articles.forEach(a => {
-                    html += `<div style="font-size:22pt; margin-bottom:15px; border-bottom:1px dashed #000;">
+                    html += `<div style="font-size:24pt; margin-bottom:10px; border-bottom:1px dashed #000;">
                         <b>• ${a.nom.toUpperCase()}</b>
-                        ${a.note ? `<br><span style="background:#eee; display:block; padding:5px; font-size:18pt;">⚠️ NOTE: ${a.note.toUpperCase()}</span>` : ''}
+                        ${a.note ? `<br><span style="background:#ddd; display:block; padding:5px; font-size:18pt;">NOTE: ${a.note.toUpperCase()}</span>` : ''}
                     </div>`;
                 });
                 document.getElementById('print-area').innerHTML = html;
@@ -130,8 +138,48 @@
             });
         }
 
-        function payer(id, mode) {
-            db.ref('commandes/'+id).update({ statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR') });
+        // 4. FONCTION ENCAISSEMENT + TICKET DE CAISSE
+        function encaisser(id, mode) {
+            db.ref('commandes/'+id).once('value', s => {
+                const o = s.val();
+                // Préparation du ticket de caisse client
+                let html = `
+                    <div class="print-center">
+                        <h2 style="margin:0;">THAI JAP</h2>
+                        <p>Ticket de Caisse<br>Table: ${o.table} | ${o.heure}</p>
+                        <hr>
+                    </div>
+                    <div style="font-size:12pt;">
+                        ${o.articles.map(a => `
+                            <div class="print-item">
+                                <span>${a.nom}</span>
+                                <span>${a.prix.toFixed(2)}€</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <hr>
+                    <div class="print-item" style="font-size:16pt; font-weight:bold;">
+                        <span>TOTAL</span>
+                        <span>${o.total}€</span>
+                    </div>
+                    <div class="print-center" style="margin-top:20px;">
+                        Paiement par : ${mode}<br>
+                        Merci de votre visite !
+                    </div>
+                `;
+                
+                document.getElementById('print-area').innerHTML = html;
+                
+                // On lance l'impression
+                window.print();
+
+                // Une fois imprimé, on valide en base de données
+                db.ref('commandes/'+id).update({ 
+                    statut: "Payé", 
+                    modePaiement: mode, 
+                    date: new Date().toLocaleDateString('fr-FR') 
+                });
+            });
         }
     </script>
 </body>
