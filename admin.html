@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Dashboard & Historique Expert</title>
+    <title>Admin ThaiJap | Dashboard Expert</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -21,12 +21,11 @@
     </main>
 
     <aside class="admin-sidebar history-panel no-print">
-        <div class="panel-header">📊 HISTORIQUE & CA</div>
+        <div class="panel-header">📊 HISTORIQUE & VENTES</div>
         <div id="history-list" class="scrollable"></div>
     </aside>
 
     <div id="print-zone" class="only-print"></div>
-
     <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
@@ -52,7 +51,7 @@
             document.getElementById('stock-list').innerHTML = h;
         });
 
-        // --- COMMANDES ET HISTORIQUE ---
+        // --- COMMANDES & HISTORIQUE ---
         let lastCount = 0;
         db.ref('commandes').on('value', (snap) => {
             const data = snap.val();
@@ -63,7 +62,7 @@
             lastCount = data ? Object.keys(data).length : 0;
 
             grid.innerHTML = "";
-            let groups = {}; // Pour l'historique groupé par jour
+            let groups = {};
 
             for(let id in data) {
                 const o = data[id];
@@ -74,7 +73,6 @@
                     groups[dateCmd].total += parseFloat(o.total);
                     groups[dateCmd].list.push(o);
                 } else {
-                    // Commandes actives
                     grid.innerHTML += `
                         <div class="order-card">
                             <div class="order-top"><span class="table-label">TABLE ${o.table}</span><span class="order-time">${o.heure}</span></div>
@@ -99,20 +97,23 @@
                 }
             }
 
-            // Génération de l'historique cliquable
             let hHtml = "";
             for(let date in groups) {
                 hHtml += `
                     <div class="history-day-wrapper">
-                        <div class="history-day-header" onclick="this.nextElementSibling.classList.toggle('active')">
+                        <div class="history-day-header" onclick="toggleHistory(this)">
                             <strong>📅 ${date}</strong>
                             <span class="day-total">${groups[date].total.toFixed(2)}€</span>
                         </div>
                         <div class="history-day-details">
                             ${groups[date].list.map(cmd => `
                                 <div class="history-item">
-                                    <span>${cmd.heure} - T.${cmd.table} (${cmd.modePaiement})</span>
-                                    <strong>${cmd.total}€</strong>
+                                    <div class="h-item-info">
+                                        <span class="h-time">${cmd.heure}</span>
+                                        <span class="h-table">Table ${cmd.table}</span>
+                                        <span class="h-mode">${cmd.modePaiement === 'Carte' ? '💳 CB' : '💶 ESP'}</span>
+                                    </div>
+                                    <strong class="h-price">${cmd.total}€</strong>
                                 </div>`).join('')}
                         </div>
                     </div>`;
@@ -120,7 +121,12 @@
             historyDiv.innerHTML = hHtml;
         });
 
-        // MODIFICATIONS
+        function toggleHistory(el) {
+            const details = el.nextElementSibling;
+            details.classList.toggle('active');
+            document.querySelectorAll('.history-day-details').forEach(d => { if(d !== details) d.classList.remove('active'); });
+        }
+
         function modifier(cid, idx, act) {
             db.ref(`commandes/${cid}`).once('value', (s) => {
                 let c = s.val();
@@ -130,7 +136,6 @@
             });
         }
 
-        // ENCAISSEMENT
         function encaisser(id, mode) {
             db.ref(`commandes/${id}`).once('value', (s) => {
                 const o = s.val();
@@ -139,7 +144,6 @@
             });
         }
 
-        // IMPRESSION CHEF
         function imprimerCuisine(id) {
             db.ref(`commandes/${id}`).once('value', (s) => {
                 const o = s.val();
@@ -150,64 +154,11 @@
             });
         }
 
-        // IMPRESSION TICKET CLIENT
         function imprimerTicketClient(o, mode) {
-            let c = `
-                <div class="ticket">
-                    <img src="images/logo.png" style="width:60px">
-                    <h2>THAI JAP</h2>
-                    <p>Table ${o.table} | ${o.heure}</p><hr>
-                    ${o.articles.map(a => `<div class="t-line"><span>${a.nom}</span><span>${a.prix.toFixed(2)}€</span></div>`).join('')}
-                    <hr><div class="t-line"><strong>TOTAL</strong><strong>${o.total}€</strong></div>
-                    <p>Paiement: ${mode}</p><p>Merci et à bientôt !</p>
-                </div>`;
+            let c = `<div class="ticket"><h2>THAI JAP</h2><p>Table ${o.table} | ${o.heure}</p><hr>${o.articles.map(a => `<div class="t-line"><span>${a.nom}</span><span>${a.prix.toFixed(2)}€</span></div>`).join('')}<hr><div class="t-line"><strong>TOTAL</strong><strong>${o.total}€</strong></div><p>Paiement: ${mode}</p></div>`;
             document.getElementById('print-zone').innerHTML = c;
             window.print();
         }
     </script>
-
-    <style>
-        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; overflow: hidden; }
-        .admin-layout-pro { display: flex; height: 100vh; }
-        
-        /* Colonnes */
-        .admin-sidebar { background: #1a1a1a; width: 280px; border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .admin-main { flex: 1; background: #050505; overflow-y: auto; }
-        .history-panel { width: 320px; border-left: 1px solid #333; border-right: none; }
-        
-        .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; }
-        .scrollable { flex: 1; overflow-y: auto; padding: 10px; }
-
-        /* Commandes Actives */
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; padding: 20px; }
-        .order-card { background: #1a1a1a; padding: 15px; border-top: 5px solid var(--red); border-radius: 4px; }
-        .table-label { font-size: 1.5rem; color: var(--red); font-weight: 700; }
-        .item-line { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
-        .item-ctrl button { background: #333; color: #fff; border: 1px solid #444; padding: 2px 8px; cursor: pointer; }
-        .order-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; }
-        .order-actions button { padding: 8px; font-weight: 700; border: none; cursor: pointer; font-size: 0.7rem; border-radius: 3px; }
-        
-        .btn-print { background: #3498db; color: #fff; }
-        .btn-cash { background: #2ecc71; color: #fff; }
-        .btn-card { background: #9b59b6; color: #fff; }
-        .btn-del { background: #e74c3c; color: #fff; grid-column: span 2; }
-
-        /* Historique Accordéon */
-        .history-day-header { background: #111; padding: 15px; border-left: 4px solid var(--gold); margin-bottom: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .history-day-details { max-height: 0; overflow: hidden; transition: 0.3s; background: #0a0a0a; }
-        .history-day-details.active { max-height: 1000px; padding: 10px; margin-bottom: 10px; }
-        .history-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 5px 0; border-bottom: 1px solid #222; }
-        .day-total { color: var(--gold); font-weight: 700; }
-
-        /* Impression */
-        .only-print { display: none; }
-        @media print {
-            .no-print { display: none !important; }
-            .only-print { display: block !important; color: #000; font-family: 'Courier Prime', monospace; }
-            .ticket { width: 80mm; padding: 10px; text-align: center; }
-            .t-line { display: flex; justify-content: space-between; margin: 5px 0; }
-        }
-    </style>
 </body>
 </html>
