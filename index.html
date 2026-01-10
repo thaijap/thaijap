@@ -12,82 +12,77 @@
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); padding-bottom: 120px; }
         header { background: var(--black); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 100; }
         #success-page { display:none; position:fixed; inset:0; background:white; z-index:1000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
-        #success-page img { width: 150px; margin-bottom: 20px; }
-        .category-title { background: white; padding: 15px 20px; font-size: 1rem; font-weight: 700; color: var(--red); text-transform: uppercase; margin-top: 10px; border-bottom: 1px solid #eee; }
         .product-card { background: white; margin: 10px; display: flex; padding: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .img-container { width: 90px; height: 90px; min-width: 90px; margin-right: 12px; border-radius: 8px; overflow: hidden; }
+        .img-container { width: 90px; height: 90px; min-width: 90px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #eee; }
         .product-img { width: 100%; height: 100%; object-fit: cover; }
         .product-info { flex: 1; }
-        .prod-name { font-weight: 700; font-size: 0.95rem; display: block; }
+        .prod-name { font-weight: 700; font-size: 0.95rem; }
         .jap-select { width: 100%; border: 1px solid #ddd; padding: 8px; margin-top: 5px; border-radius: 6px; font-size: 0.85rem; }
-        .note-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 8px 0; margin-top: 5px; font-size: 0.8rem; font-style: italic; outline: none; }
-        .add-btn { background: var(--black); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 1.5rem; cursor: pointer; margin-left: 10px; }
-        #cart-drawer { position: fixed; bottom: 85px; left: 10px; right: 10px; background: white; border-radius: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); padding: 15px; display: none; max-height: 50vh; overflow-y: auto; z-index: 190; border: 1px solid #eee; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.85rem; }
-        .btn-del { background: none; border: none; color: var(--red); font-weight: bold; cursor: pointer; padding: 5px 10px; }
-        #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-sizing: border-box; z-index: 200; border-top: 3px solid var(--red); }
-        #btn-commander { background: var(--red); color: white; border: none; padding: 12px 25px; font-weight: 700; border-radius: 8px; cursor: pointer; }
+        .add-btn { background: var(--black); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 1.5rem; cursor: pointer; margin-left: 10px; align-self: center; }
+        #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-sizing: border-box; z-index: 200; }
+        #btn-commander { background: var(--red); color: white; border: none; padding: 12px 25px; font-weight: 700; border-radius: 8px; }
+        #cart-drawer { position: fixed; bottom: 85px; left: 10px; right: 10px; background: white; border-radius: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); padding: 15px; display: none; z-index: 190; }
     </style>
 </head>
 <body>
     <div id="success-page">
-        <img src="images/logo.png" onerror="this.src='https://via.placeholder.com/150?text=THAI+JAP'">
+        <img src="images/logo.png" width="150" onerror="this.src='https://via.placeholder.com/150?text=THAI+JAP'">
         <h2 style="color:var(--red)">COMMANDE REÇUE !</h2>
-        <p>Votre commande est en cours de préparation.<br>Elle sera servie à votre table sous peu.</p>
-        <button onclick="location.reload()" style="margin-top:20px; padding:12px 25px; background:var(--black); color:white; border:none; border-radius:5px;">Retour au menu</button>
+        <p>Elle arrive bientôt à votre table.</p>
+        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px;">Retour au menu</button>
     </div>
-    <header><h1>THAI JAP</h1><div id="table-num" style="color:var(--gold); font-size:0.8rem; font-weight:700;">TABLE --</div></header>
+    <header><h1>THAI JAP</h1><div id="table-num" style="color:var(--gold); font-size:0.8rem;">TABLE --</div></header>
     <main id="menu-container"></main>
-    <div id="cart-drawer"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h3 style="margin:0; font-size:1rem;">Ma Sélection</h3><span onclick="toggleCart()" style="color:var(--red); font-size:0.8rem; font-weight:700;">Fermer</span></div><div id="cart-list"></div></div>
+    <div id="cart-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h3>Mon Panier</h3><span onclick="toggleCart()" style="color:var(--red);">Fermer</span></div>
+        <div id="cart-list"></div>
+    </div>
     <div id="cart-bar" style="display:none;" onclick="toggleCart()">
-        <div id="cart-info"><span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€<div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:700;"></div></div>
+        <div><span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€<div id="applied-menu" style="color:var(--gold); font-size:0.7rem;"></div></div>
         <button id="btn-commander" onclick="event.stopPropagation(); envoyerCommande()">COMMANDER</button>
     </div>
+
     <script>
         const firebaseConfig = { apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", projectId: "thaijap", appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const params = new URLSearchParams(window.location.search);
-        const table = params.get('table') || "Emporter";
+        const table = new URLSearchParams(window.location.search).get('table') || "Emporter";
         document.getElementById('table-num').innerText = "TABLE " + table;
-        let panier = [], categories = ["entrees", "sushis", "plats", "boissons", "desserts"];
+        let panier = [];
 
         db.ref('/').on('value', snap => {
             const data = snap.val(), container = document.getElementById('menu-container');
             let html = "";
-            categories.forEach(cat => {
-                let catItems = "";
+            ["entrees", "sushis", "plats", "boissons", "desserts"].forEach(cat => {
+                let items = "";
                 for (let id in data) {
                     const p = data[id];
                     if (id.startsWith('p') && p.categorie === cat && p.dispo !== false) {
+                        let optHtml = p.options ? `<select id="opt-${id}" class="jap-select">${p.options.map((o,i)=>(p.optionsDispo && p.optionsDispo[i]===false)?'':`<option>${o}</option>`).join('')}</select>` : "";
                         let specHtml = p.specials ? `<select id="spec-${id}" class="jap-select">${p.specials.filter(s=>s.dispo!==false).map(s=>`<option value="${s.v}|${s.p}">${s.v} (${s.p.toFixed(2)}€)</option>`).join('')}</select>` : "";
-                        let optHtml = p.options ? `<select id="opt-${id}" class="jap-select">${p.options.map((o,i)=>(p.optionsDispo && p.optionsDispo[i]===false)?"":`<option value="${o}">${o}</option>`).join('')}</select>` : "";
-                        catItems += `<div class="product-card"><div class="img-container"><img src="${p.img || 'images/default.png'}" class="product-img" onerror="this.src='https://via.placeholder.com/150?text=ThaiJap'"></div>
-                            <div class="product-info"><span class="prod-name">${p.nom}</span><span style="color:var(--red); font-weight:700; font-size:0.9rem;">${p.prix ? p.prix.toFixed(2)+'€' : ''}</span>${optHtml}${specHtml}<input type="text" id="note-${id}" placeholder="Notes..." class="note-input"></div>
-                            <button class="add-btn" onclick="ajouter('${id}', '${p.nom}', ${p.prix || 0}, ${!!p.options}, ${!!p.specials}, '${p.categorie}')">+</button></div>`;
+                        if((p.options && !optHtml.includes('<option>')) || (p.specials && !specHtml.includes('<option>'))) continue;
+                        items += `<div class="product-card">
+                            <div class="img-container"><img src="${p.img || ''}" class="product-img" onerror="this.src='https://via.placeholder.com/150?text=ThaiJap'"></div>
+                            <div class="product-info"><span class="prod-name">${p.nom}</span><br><span style="color:var(--red); font-weight:700;">${p.prix?p.prix.toFixed(2)+'€':''}</span>${optHtml}${specHtml}<input type="text" id="note-${id}" placeholder="Note..." style="width:100%;border:none;border-bottom:1px solid #eee;margin-top:5px;font-size:0.7rem;"></div>
+                            <button class="add-btn" onclick="ajouter('${id}','${p.nom}',${p.prix||0},'${cat}')">+</button></div>`;
                     }
                 }
-                if(catItems) html += `<div class="category-title">${cat}</div>` + catItems;
+                if(items) html += `<div style="background:#fff;padding:15px;color:var(--red);font-weight:700;text-transform:uppercase;margin-top:10px;">${cat}</div>` + items;
             });
             container.innerHTML = html;
         });
 
-        function ajouter(id, nom, prix, hasOpt, hasSpec, cat) {
-            let n = nom, pFinal = prix, note = document.getElementById('note-' + id).value;
-            if(hasOpt) n += " (" + document.getElementById('opt-'+id).value + ")";
-            if(hasSpec) { const s = document.getElementById('spec-'+id).value.split('|'); n += " " + s[0]; pFinal = parseFloat(s[1]); }
-            panier.push({nom: n, prix: pFinal, categorie: cat, note: note});
-            document.getElementById('note-' + id).value = ""; calculerPanier();
+        function ajouter(id, nom, prix, cat) {
+            let n = nom, pFinal = prix, note = document.getElementById('note-'+id).value;
+            if(document.getElementById('opt-'+id)) n += " (" + document.getElementById('opt-'+id).value + ")";
+            if(document.getElementById('spec-'+id)) { const s = document.getElementById('spec-'+id).value.split('|'); n += " " + s[0]; pFinal = parseFloat(s[1]); }
+            panier.push({nom: n, prix: pFinal, categorie: cat, note});
+            calculerPanier();
         }
-
-        function supprimer(index) { panier.splice(index, 1); calculerPanier(); }
-        function toggleCart() { const d = document.getElementById('cart-drawer'); d.style.display = (d.style.display === 'block') ? 'none' : 'block'; }
 
         function calculerPanier() {
             let total = 0, temp = [...panier], nF = 0, nG = 0, nT = 0;
-            while (temp.filter(i => i.categorie === "sushis").length >= 5) {
-                nF++; total += 44.90; for(let k=0; k<5; k++) temp.splice(temp.findIndex(i => i.categorie === "sushis"), 1);
-            }
+            while (temp.filter(i => i.categorie === "sushis").length >= 5) { nF++; total += 44.90; for(let k=0; k<5; k++) temp.splice(temp.findIndex(i => i.categorie === "sushis"), 1); }
             while (true) {
                 let iE = temp.findIndex(i => i.categorie === "entrees"), iP = temp.findIndex(i => i.categorie === "plats" && i.prix === 14.9), iB = temp.findIndex(i => i.categorie === "boissons");
                 if (iE!==-1 && iP!==-1 && iB!==-1) { nG++; total+=20.90; temp.splice(iP,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
@@ -100,15 +95,12 @@
             document.getElementById('cart-count').innerText = panier.length;
             document.getElementById('cart-total').innerText = total.toFixed(2);
             document.getElementById('applied-menu').innerText = (nF>0?nF+" Family ":"") + (nG>0?nG+" Gourmand ":"") + (nT>0?nT+" Tokyo":"");
-            let listH = ""; panier.forEach((item, idx) => { listH += `<div class="cart-item"><span>${item.nom}</span><div>${item.prix.toFixed(2)}€ <button class="btn-del" onclick="event.stopPropagation(); supprimer(${idx})">✕</button></div></div>`; });
-            document.getElementById('cart-list').innerHTML = listH;
+            document.getElementById('cart-list').innerHTML = panier.map((i,idx)=>`<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:0.8rem;"><span>${i.nom}</span><span onclick="panier.splice(${idx},1);calculerPanier()" style="color:red;">✕</span></div>`).join('');
             document.getElementById('cart-bar').style.display = panier.length > 0 ? "flex" : "none";
-            if(panier.length === 0) document.getElementById('cart-drawer').style.display = 'none';
         }
-
+        function toggleCart() { const d = document.getElementById('cart-drawer'); d.style.display = (d.style.display === 'block') ? 'none' : 'block'; }
         function envoyerCommande() {
-            const cmd = { table: table, articles: panier, total: document.getElementById('cart-total').innerText, menu: document.getElementById('applied-menu').innerText, statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) };
-            db.ref('commandes').push(cmd).then(() => { document.getElementById('success-page').style.display = 'flex'; panier = []; calculerPanier(); });
+            db.ref('commandes').push({ table, articles: panier, total: document.getElementById('cart-total').innerText, menu: document.getElementById('applied-menu').innerText, statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) }).then(() => { document.getElementById('success-page').style.display = 'flex'; panier = []; calculerPanier(); });
         }
     </script>
 </body>
