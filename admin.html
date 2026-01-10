@@ -2,31 +2,43 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Gestion & Encaissement</title>
+    <title>Admin ThaiJap | Dashboard & Terminal</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
     <style>
-        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --green: #2ecc71; --blue: #3498db; }
+        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --green: #2ecc71; --blue: #3498db; --grey: #1a1a1a; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; display: flex; height: 100vh; overflow: hidden; }
         
-        /* LAYOUT */
-        .sidebar { width: 320px; background: #1a1a1a; border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .main { flex: 1; background: #050505; overflow-y: auto; padding: 10px; }
-        .history { width: 320px; background: #111; overflow-y: auto; border-left: 1px solid #333; }
-        .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; }
+        .sidebar { width: 320px; background: var(--grey); border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .main { flex: 1; background: #050505; display: flex; flex-direction: column; border-right: 1px solid #333; }
+        .history { width: 320px; background: #111; overflow-y: auto; }
 
-        /* STOCK ITEMS */
-        .stock-item { background: #151515; padding: 10px; border-bottom: 1px solid #333; }
+        .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; text-transform: uppercase; }
+
+        /* COMMANDES EN COURS */
+        #order-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .order-card { background: var(--grey); padding: 15px; border-radius: 4px; border-top: 4px solid var(--red); margin-bottom: 15px; }
+
+        /* TERMINAL DE COMMANDE (BAS DE PAGE) */
+        .terminal-box { height: 350px; background: #151515; border-top: 2px solid var(--gold); display: flex; flex-direction: column; }
+        .terminal-grid { display: flex; flex: 1; overflow: hidden; }
+        .term-products { flex: 2; overflow-y: auto; padding: 10px; border-right: 1px solid #333; }
+        .term-cart { flex: 1; background: #0a0a0a; padding: 10px; display: flex; flex-direction: column; }
+        
+        .term-item { background: #222; margin-bottom: 5px; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .term-item:hover { background: #333; }
+        .term-select { width: 100%; background: #000; color: #fff; border: 1px solid #444; margin-top: 5px; font-size: 0.75rem; }
+        
+        .cart-row { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 3px; }
+        .btn-term-send { background: var(--gold); color: #000; border: none; padding: 10px; font-weight: 700; cursor: pointer; margin-top: auto; }
+
+        /* STOCK & BUTTONS */
+        .stock-item { background: #151515; padding: 10px; border-bottom: 1px solid #333; font-size: 0.8rem; }
         .btn-toggle { border: none; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-weight: 700; color: #fff; font-size: 0.65rem; }
         .on { background: var(--green); } .off { background: var(--red); }
+        .btn-pay { width: 48%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; color: #fff; font-size: 0.7rem; }
 
-        /* ORDERS */
-        .order-card { background: #1a1a1a; padding: 15px; border-radius: 4px; border-top: 4px solid var(--red); margin-bottom: 15px; }
-        .btn-pay { width: 48%; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 700; color: #fff; }
-        .btn-chef { width: 100%; padding: 10px; background: var(--blue); color: white; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
-
-        /* PRINT STYLE */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
@@ -40,18 +52,31 @@
 <body>
     <div id="print-area"></div>
 
-    <aside class="sidebar">
+    <aside class="sidebar no-print">
         <div class="panel-header">📦 STOCKS</div>
-        <div id="stock-list"></div>
+        <div id="stock-list" style="overflow-y:auto; flex:1;"></div>
     </aside>
 
-    <main class="main">
-        <div class="panel-header">🔥 COMMANDES EN COURS</div>
+    <main class="main no-print">
+        <div class="panel-header">🔥 EN COURS</div>
         <div id="order-list"></div>
+
+        <div class="terminal-box">
+            <div style="background:var(--gold); color:#000; font-size:0.7rem; padding:5px; font-weight:700; text-align:center;">TERMINAL DE PRISE DE COMMANDE (COMMANDE DIRECTE)</div>
+            <div class="terminal-grid">
+                <div id="term-products" class="term-products"></div>
+                <div class="term-cart">
+                    <input type="text" id="term-table" placeholder="N° Table" style="width:100%; padding:5px; margin-bottom:10px; background:#000; color:var(--gold); border:1px solid var(--gold);">
+                    <div id="term-cart-list" style="flex:1; overflow-y:auto;"></div>
+                    <div id="term-total" style="font-weight:700; color:var(--gold); padding:5px 0;">TOTAL: 0.00€</div>
+                    <button class="btn-term-send" onclick="envoyerCommandeInterne()">ENVOYER EN CUISINE</button>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <aside class="history">
-        <div class="panel-header">📊 HISTORIQUE JOURNALIER</div>
+    <aside class="history no-print">
+        <div class="panel-header">📊 HISTORIQUE</div>
         <div id="history-list"></div>
     </aside>
 
@@ -65,36 +90,87 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 1. GESTION DES STOCKS
+        let panierInterne = [];
+        let menuData = {};
+
+        // 1. CHARGEMENT STOCKS & TERMINAL
         db.ref('/').on('value', snap => {
-            const data = snap.val(); let h = "";
-            ["entrees", "sushis", "plats", "boissons", "desserts"].forEach(cat => {
-                h += `<div style="background:var(--red); padding:5px 10px; font-size:0.7rem; font-weight:700;">${cat.toUpperCase()}</div>`;
-                for(let id in data) {
-                    if(id.startsWith('p') && data[id].categorie === cat) {
-                        const p = data[id]; const globalOff = p.dispo === false;
-                        h += `<div class="stock-item">
+            menuData = snap.val();
+            let sH = "", tH = "";
+            const cats = ["entrees", "sushis", "plats", "boissons", "desserts"];
+            
+            cats.forEach(cat => {
+                sH += `<div style="background:var(--red); padding:5px 10px; font-size:0.7rem; font-weight:700;">${cat.toUpperCase()}</div>`;
+                tH += `<div style="color:var(--gold); font-size:0.6rem; font-weight:700; margin:5px 0;">-- ${cat.toUpperCase()} --</div>`;
+                
+                for(let id in menuData) {
+                    if(id.startsWith('p') && menuData[id].categorie === cat) {
+                        const p = menuData[id]; const off = p.dispo === false;
+                        // Affichage Stock
+                        sH += `<div class="stock-item">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <span style="font-size:0.85rem; color:var(--gold); font-weight:700;">${p.nom}</span>
-                                <button class="btn-toggle ${globalOff?'off':'on'}" onclick="db.ref('${id}/dispo').set(${globalOff})">${globalOff?'OFF':'ON'}</button>
+                                <span>${p.nom}</span>
+                                <button class="btn-toggle ${off?'off':'on'}" onclick="db.ref('${id}/dispo').set(${off})">${off?'OFF':'ON'}</button>
                             </div>`;
-                        if(p.specials) {
-                            p.specials.forEach((s, i) => { const sOff = s.dispo === false;
-                                h += `<div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-top:5px;padding-left:10px;"><span>${s.v}</span><button class="btn-toggle ${sOff?'off':'on'}" onclick="db.ref('${id}/specials/${i}/dispo').set(${sOff})">${sOff?'OFF':'ON'}</button></div>`;
-                            });
-                        } else if(p.options) {
-                            p.options.forEach((o, i) => { const oOff = p.optionsDispo && p.optionsDispo[i] === false;
-                                h += `<div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-top:5px;padding-left:10px;"><span>${o}</span><button class="btn-toggle ${oOff?'off':'on'}" onclick="db.ref('${id}/optionsDispo/${i}').set(${!oOff})">${oOff?'OFF':'ON'}</button></div>`;
-                            });
+                        if(p.specials) { p.specials.forEach((s, i) => { const sO = s.dispo === false; sH += `<div style="display:flex;justify-content:space-between;font-size:0.7rem;padding-left:10px;margin-top:2px;"><span>${s.v}</span><button class="btn-toggle ${sO?'off':'on'}" onclick="db.ref('${id}/specials/${i}/dispo').set(${sO})">${sO?'OFF':'ON'}</button></div>`; }); }
+                        sH += `</div>`;
+
+                        // Affichage Terminal
+                        if(!off) {
+                            tH += `<div class="term-item" onclick="ajouterAuPanierInterne('${id}')">
+                                <strong>${p.nom}</strong> ${p.prix ? p.prix.toFixed(2)+'€' : ''}
+                                ${p.options ? `<select class="term-select" id="term-opt-${id}" onclick="event.stopPropagation()">${p.options.map(o=>`<option>${o}</option>`).join('')}</select>` : ''}
+                                ${p.specials ? `<select class="term-select" id="term-spec-${id}" onclick="event.stopPropagation()">${p.specials.map(s=>`<option value="${s.v}|${s.p}">${s.v} (${s.p.toFixed(2)}€)</option>`).join('')}</select>` : ''}
+                            </div>`;
                         }
-                        h += `</div>`;
                     }
                 }
             });
-            document.getElementById('stock-list').innerHTML = h;
+            document.getElementById('stock-list').innerHTML = sH;
+            document.getElementById('term-products').innerHTML = tH;
         });
 
-        // 2. COMMANDES & AFFICHAGE
+        // 2. LOGIQUE PANIER INTERNE (Terminal)
+        function ajouterAuPanierInterne(id) {
+            const p = menuData[id];
+            let nom = p.nom, prix = p.prix || 0;
+            if(p.options) nom += " (" + document.getElementById('term-opt-'+id).value + ")";
+            if(p.specials) {
+                const s = document.getElementById('term-spec-'+id).value.split('|');
+                nom += " " + s[0]; prix = parseFloat(s[1]);
+            }
+            panierInterne.push({nom: nom, prix: prix, categorie: p.categorie});
+            majPanierInterne();
+        }
+
+        function majPanierInterne() {
+            let total = 0, temp = [...panierInterne], nT = 0, nG = 0;
+            // Calcul Menus
+            while (true) {
+                let iE = temp.findIndex(i => i.categorie === "entrees"), iP = temp.findIndex(i => i.categorie === "plats" && i.prix === 14.9), iB = temp.findIndex(i => i.categorie === "boissons");
+                if (iE!==-1 && iP!==-1 && iB!==-1) { nG++; total+=19.9; temp.splice(iP,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
+            }
+            while (true) {
+                let iE = temp.findIndex(i => i.categorie === "entrees"), iS = temp.findIndex(i => i.categorie === "sushis"), iB = temp.findIndex(i => i.categorie === "boissons");
+                if (iE!==-1 && iS!==-1 && iB!==-1) { nT++; total+=16.9; temp.splice(iS,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
+            }
+            temp.forEach(i => total += i.prix);
+            
+            document.getElementById('term-total').innerText = "TOTAL: " + total.toFixed(2) + "€";
+            document.getElementById('term-cart-list').innerHTML = panierInterne.map((i,idx) => `<div class="cart-row"><span>${i.nom}</span><span style="color:red;cursor:pointer;" onclick="panierInterne.splice(${idx},1);majPanierInterne()">✕</span></div>`).join('');
+        }
+
+        function envoyerCommandeInterne() {
+            const table = document.getElementById('term-table').value;
+            if(!table || panierInterne.length === 0) return alert("Table vide ou panier vide !");
+            const total = document.getElementById('term-total').innerText.split(': ')[1].replace('€','');
+            const cmd = { table: table, articles: panierInterne, total: total, statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) };
+            db.ref('commandes').push(cmd).then(() => {
+                panierInterne = []; majPanierInterne(); document.getElementById('term-table').value = "";
+            });
+        }
+
+        // 3. COMMANDES EN COURS & HISTORIQUE
         db.ref('commandes').on('value', snap => {
             const data = snap.val(); let oH = "", hH = ""; let totaux = {};
             for(let id in data) {
@@ -105,80 +181,37 @@
                 } else {
                     oH += `<div class="order-card">
                         <div style="font-weight:700; color:var(--red);">TABLE ${o.table} <span style="float:right; color:#666;">${o.heure}</span></div>
-                        <div style="margin:10px 0; font-size:0.85rem;">
-                            ${o.articles.map(a => `• <strong>${a.nom}</strong>${a.note?' <br><i style="color:var(--green)">Note: '+a.note+'</i>':''}`).join('<br>')}
-                        </div>
-                        <div style="text-align:right; font-weight:700; margin-bottom:10px;">TOTAL: ${o.total}€</div>
+                        <div style="margin:10px 0; font-size:0.8rem;">${o.articles.map(a => `• ${a.nom}${a.note?' <i style="color:var(--green)">('+a.note+')</i>':''}`).join('<br>')}</div>
+                        <div style="text-align:right; font-weight:700; margin-bottom:10px; color:var(--gold);">TOTAL: ${o.total}€</div>
                         <button class="btn-chef" onclick="imprimerChef('${id}')">👨‍🍳 TICKET CUISINE</button>
                         <div style="display:flex; justify-content:space-between;">
-                            <button class="btn-pay" style="background:var(--green);" onclick="encaisser('${id}','ESPECES')">💶 ESPÈCES</button>
-                            <button class="btn-pay" style="background:var(--blue);" onclick="encaisser('${id}','CB')">💳 CARTE (CB)</button>
+                            <button class="btn-pay" style="background:var(--green);" onclick="encaisser('${id}','ESP')">ESPECES</button>
+                            <button class="btn-pay" style="background:var(--blue);" onclick="encaisser('${id}','CB')">CARTE</button>
                         </div>
                     </div>`;
                 }
             }
             document.getElementById('order-list').innerHTML = oH;
-            let histFinal = ""; for(let j in totaux) histFinal += `<div style="background:#222; padding:10px; font-weight:700; color:var(--gold);">${j} : ${totaux[j].toFixed(2)}€</div>`;
+            let histFinal = ""; for(let j in totaux) histFinal += `<div style="background:#222; padding:10px; font-weight:700; color:var(--gold); border-bottom:1px solid #333;">${j} : ${totaux[j].toFixed(2)}€</div>`;
             document.getElementById('history-list').innerHTML = histFinal + hH;
         });
 
-        // 3. FONCTION IMPRESSION CUISINE (GRANDES LETTRES + NOTES)
+        // 4. IMPRESSIONS
         function imprimerChef(id) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
-                let html = `<div class="print-center"><h1 style="font-size:40pt; margin:0;">TABLE ${o.table}</h1><p>${o.heure}</p></div><hr>`;
-                o.articles.forEach(a => {
-                    html += `<div style="font-size:24pt; margin-bottom:10px; border-bottom:1px dashed #000;">
-                        <b>• ${a.nom.toUpperCase()}</b>
-                        ${a.note ? `<br><span style="background:#ddd; display:block; padding:5px; font-size:18pt;">NOTE: ${a.note.toUpperCase()}</span>` : ''}
-                    </div>`;
-                });
-                document.getElementById('print-area').innerHTML = html;
-                window.print();
+                let html = `<div class="print-center"><h1 style="font-size:35pt;">TABLE ${o.table}</h1><p>${o.heure}</p><hr></div>`;
+                o.articles.forEach(a => { html += `<div style="font-size:22pt; margin-bottom:15px; border-bottom:1px dashed #000;"><b>• ${a.nom.toUpperCase()}</b>${a.note ? `<br><span style="font-size:18pt;">⚠️ NOTE: ${a.note.toUpperCase()}</span>` : ''}</div>`; });
+                document.getElementById('print-area').innerHTML = html; window.print();
             });
         }
 
-        // 4. FONCTION ENCAISSEMENT + TICKET DE CAISSE
         function encaisser(id, mode) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
-                // Préparation du ticket de caisse client
-                let html = `
-                    <div class="print-center">
-                        <h2 style="margin:0;">THAI JAP</h2>
-                        <p>Ticket de Caisse<br>Table: ${o.table} | ${o.heure}</p>
-                        <hr>
-                    </div>
-                    <div style="font-size:12pt;">
-                        ${o.articles.map(a => `
-                            <div class="print-item">
-                                <span>${a.nom}</span>
-                                <span>${a.prix.toFixed(2)}€</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <hr>
-                    <div class="print-item" style="font-size:16pt; font-weight:bold;">
-                        <span>TOTAL</span>
-                        <span>${o.total}€</span>
-                    </div>
-                    <div class="print-center" style="margin-top:20px;">
-                        Paiement par : ${mode}<br>
-                        Merci de votre visite !
-                    </div>
-                `;
-                
-                document.getElementById('print-area').innerHTML = html;
-                
-                // On lance l'impression
-                window.print();
-
-                // Une fois imprimé, on valide en base de données
-                db.ref('commandes/'+id).update({ 
-                    statut: "Payé", 
-                    modePaiement: mode, 
-                    date: new Date().toLocaleDateString('fr-FR') 
-                });
+                let html = `<div class="print-center"><h2>THAI JAP</h2><p>Table ${o.table} | ${o.heure}</p><hr></div>${o.articles.map(a => `<div class="print-item"><span>${a.nom}</span><span>${a.prix.toFixed(2)}€</span></div>`).join('')}<hr><div class="print-item" style="font-weight:bold; font-size:1.2rem;"><span>TOTAL</span><span>${o.total}€</span></div><p style="text-align:center;">Paiement : ${mode}</p>`;
+                document.getElementById('print-area').innerHTML = html; window.print();
+                db.ref('commandes/'+id).update({ statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR') });
             });
         }
     </script>
