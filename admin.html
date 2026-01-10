@@ -11,39 +11,40 @@
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; display: flex; height: 100vh; overflow: hidden; }
         
         /* Layout */
-        .sidebar { width: 340px; background: var(--grey); border-right: 1px solid #333; overflow-y: auto; }
-        .main { flex: 1; background: #050505; display: flex; flex-direction: column; border-right: 1px solid #333; overflow-y: auto; }
-        .history { width: 320px; background: #111; overflow-y: auto; }
+        .sidebar { width: 300px; background: var(--grey); border-right: 1px solid #333; overflow-y: auto; }
+        .main { flex: 1; background: #050505; display: flex; flex-direction: column; border-right: 1px solid #333; }
+        .history { width: 280px; background: #111; overflow-y: auto; }
         
-        .panel-header { padding: 15px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; position: sticky; top: 0; z-index: 10; }
+        .panel-header { padding: 12px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; font-size: 0.8rem; text-transform: uppercase; }
+
+        /* Zone Commandes Reçues */
+        #order-list { flex: 1; overflow-y: auto; padding: 10px; border-bottom: 2px solid var(--gold); }
+        .order-card { background: var(--grey); padding: 12px; border-radius: 6px; border-top: 4px solid var(--red); margin-bottom: 10px; position: relative; }
         
-        /* Commandes */
-        .order-card { background: var(--grey); padding: 15px; border-radius: 8px; border-top: 4px solid var(--red); margin: 15px; position: relative; }
-        .order-table { font-size: 1.2rem; font-weight: 700; color: var(--gold); margin-bottom: 10px; }
-        .order-item { font-size: 0.9rem; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #333; }
-        .order-note { color: var(--red); font-size: 0.75rem; font-style: italic; }
-        
-        /* Boutons */
-        .btn-group { display: flex; gap: 5px; margin-top: 15px; }
-        .btn { border: none; padding: 10px; border-radius: 4px; color: white; font-weight: 700; cursor: pointer; flex: 1; font-size: 0.7rem; }
-        .btn-chef { background: var(--gold); color: black; }
-        .btn-esp { background: var(--green); }
-        .btn-cb { background: var(--blue); }
-        
-        /* Stocks */
-        .stock-item { background: #151515; padding: 10px; border-bottom: 1px solid #333; }
-        .btn-toggle { border: none; padding: 4px 10px; cursor: pointer; border-radius: 3px; font-weight: 700; color: #fff; font-size: 0.65rem; }
+        /* Zone Terminal Manuel */
+        .terminal-box { height: 350px; background: #151515; display: flex; flex-direction: column; }
+        .terminal-grid { display: flex; flex: 1; overflow: hidden; }
+        .term-products { flex: 2; overflow-y: auto; padding: 8px; border-right: 1px solid #333; }
+        .term-cart { flex: 1; background: #0a0a0a; padding: 8px; display: flex; flex-direction: column; }
+        .term-item { background: #222; margin-bottom: 4px; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .term-select { width: 100%; background: #000; color: #fff; border: 1px solid #444; margin-top: 4px; font-size: 0.7rem; }
+        .btn-term-send { background: var(--gold); color: #000; border: none; padding: 10px; font-weight: 700; cursor: pointer; margin-top: auto; border-radius: 4px; font-size: 0.8rem; }
+
+        /* Stocks & Boutons */
+        .stock-item { background: #151515; padding: 8px; border-bottom: 1px solid #222; }
+        .btn-toggle { border: none; padding: 3px 8px; cursor: pointer; border-radius: 3px; font-weight: 700; color: #fff; font-size: 0.6rem; }
         .on { background: var(--green); } .off { background: var(--red); }
-        .variant-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; padding-left: 15px; margin-top: 8px; border-left: 2px solid #444; }
+        .variant-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; padding-left: 10px; margin-top: 5px; border-left: 1px solid #444; }
+        
+        .btn-pay-group { display: flex; gap: 4px; margin-top: 10px; }
+        .btn-action { border: none; padding: 8px; border-radius: 4px; color: white; font-weight: 700; cursor: pointer; flex: 1; font-size: 0.65rem; }
 
         /* Impression */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
-            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; color: black; font-family: 'Courier Prime', monospace; }
-            .print-chef { font-size: 20pt; font-weight: bold; }
-            .print-client { font-size: 12pt; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: black; font-family: 'Courier Prime', monospace; }
         }
     </style>
 </head>
@@ -51,18 +52,32 @@
     <div id="print-area"></div>
 
     <aside class="sidebar no-print">
-        <div class="panel-header">📦 STOCKS & OPTIONS</div>
+        <div class="panel-header">📦 STOCKS / FARSES</div>
         <div id="stock-list"></div>
     </aside>
 
     <main class="main no-print">
-        <div class="panel-header">🔥 COMMANDES EN CUISINE</div>
+        <div class="panel-header">🔥 COMMANDES EN COURS (CLIENTS)</div>
         <div id="order-list"></div>
+
+        <div class="terminal-box">
+            <div class="panel-header" style="color:var(--gold); border-color:var(--gold);">⌨️ TERMINAL COMMANDE MANUELLE</div>
+            <div class="terminal-grid">
+                <div id="term-products" class="term-products"></div>
+                <div class="term-cart">
+                    <input type="text" id="term-table" placeholder="Table n°" style="width:90%; padding:6px; margin-bottom:8px; background:#000; color:var(--gold); border:1px solid var(--gold); border-radius:4px;">
+                    <div id="term-cart-list" style="flex:1; overflow-y:auto; font-size: 0.7rem;"></div>
+                    <div id="applied-menu-term" style="font-size:0.6rem; color:var(--gold); font-weight:700;"></div>
+                    <div id="term-total" style="font-weight:700; color:var(--gold); padding:5px 0;">TOTAL: 0.00€</div>
+                    <button class="btn-term-send" onclick="envoyerCommandeInterne()">ENVOYER EN CUISINE</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <aside class="history no-print">
-        <div class="panel-header">📊 HISTORIQUE DU JOUR</div>
-        <div id="day-total" style="text-align:center; padding:10px; background:var(--gold); color:black; font-weight:bold; font-size:1.1rem;">TOTAL : 0.00€</div>
+        <div class="panel-header">📊 CAISSE DU JOUR</div>
+        <div id="day-total" style="text-align:center; padding:10px; background:var(--gold); color:black; font-weight:700;">0.00€</div>
         <div id="history-list"></div>
     </aside>
 
@@ -70,125 +85,134 @@
         const firebaseConfig = { apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", projectId: "thaijap", appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        let menuData = {}, panierInterne = [];
 
-        // 1. GESTION DES STOCKS (ON/OFF)
+        // --- GESTION STOCKS ET REMPLISSAGE TERMINAL ---
         db.ref('/').on('value', snap => {
-            const data = snap.val(); let sH = "";
-            for(let id in data) {
-                if(!id.startsWith('p')) continue;
-                const p = data[id];
-                sH += `<div class="stock-item">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span>${p.nom}</span>
-                        <button class="btn-toggle ${p.dispo?'on':'off'}" onclick="db.ref('${id}/dispo').set(${!p.dispo})">${p.dispo?'ON':'OFF'}</button>
-                    </div>`;
-                if(p.options) {
-                    p.options.forEach((opt, i) => {
-                        sH += `<div class="variant-row"><span>${opt.n}</span><button class="btn-toggle ${opt.s?'on':'off'}" onclick="db.ref('${id}/options/${i}/s').set(${!opt.s})">${opt.s?'ON':'OFF'}</button></div>`;
-                    });
+            menuData = snap.val();
+            let sH = "", tH = "";
+            const cats = ["entrees", "sushis", "plats", "boissons", "desserts"];
+            
+            cats.forEach(cat => {
+                sH += `<div style="background:var(--red); padding:5px; font-size:0.6rem; font-weight:700;">${cat.toUpperCase()}</div>`;
+                tH += `<div style="color:var(--gold); font-size:0.6rem; font-weight:700; margin:5px 0;">-- ${cat.toUpperCase()} --</div>`;
+                
+                for(let id in menuData) {
+                    if(id.startsWith('p') && menuData[id].categorie === cat) {
+                        const p = menuData[id];
+                        // Stock
+                        sH += `<div class="stock-item">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-size:0.75rem;">${p.nom}</span>
+                                <button class="btn-toggle ${p.dispo?'on':'off'}" onclick="db.ref('${id}/dispo').set(${!p.dispo})">${p.dispo?'ON':'OFF'}</button>
+                            </div>`;
+                        if(p.options) p.options.forEach((opt, i) => {
+                            sH += `<div class="variant-row"><span>${opt.n}</span><button class="btn-toggle ${opt.s?'on':'off'}" onclick="db.ref('${id}/options/${i}/s').set(${!opt.s})">${opt.s?'ON':'OFF'}</button></div>`;
+                        });
+                        if(p.specials) p.specials.forEach((spec, i) => {
+                            sH += `<div class="variant-row"><span>${spec.v}</span><button class="btn-toggle ${spec.s?'on':'off'}" onclick="db.ref('${id}/specials/${i}/s').set(${!spec.s})">${spec.s?'ON':'OFF'}</button></div>`;
+                        });
+                        sH += `</div>`;
+
+                        // Terminal
+                        if(p.dispo) {
+                            tH += `<div class="term-item" onclick="ajouterInterne('${id}')">
+                                <b>${p.nom}</b>
+                                ${p.options ? `<select class="term-select" id="term-opt-${id}" onclick="event.stopPropagation()">${p.options.map(o=>o.s?`<option>${o.n}</option>`:'').join('')}</select>` : ''}
+                                ${p.specials ? `<select class="term-select" id="term-spec-${id}" onclick="event.stopPropagation()">${p.specials.map(s=>s.s?`<option value="${s.v}|${s.p}">${s.v} (${s.p}€)</option>`:'').join('')}</select>` : ''}
+                            </div>`;
+                        }
+                    }
                 }
-                if(p.specials) {
-                    p.specials.forEach((spec, i) => {
-                        sH += `<div class="variant-row"><span>${spec.v}</span><button class="btn-toggle ${spec.s?'on':'off'}" onclick="db.ref('${id}/specials/${i}/s').set(${!spec.s})">${spec.s?'ON':'OFF'}</button></div>`;
-                    });
-                }
-                sH += `</div>`;
-            }
+            });
             document.getElementById('stock-list').innerHTML = sH;
+            document.getElementById('term-products').innerHTML = tH;
         });
 
-        // 2. AFFICHAGE DES COMMANDES ET HISTORIQUE
-        db.ref('commandes').on('value', snap => {
-            const data = snap.val();
-            let oH = "", hH = "", totalJour = 0;
-            const today = new Date().toLocaleDateString('fr-FR');
+        // --- COMMANDE MANUELLE ---
+        function ajouterInterne(id) {
+            const p = menuData[id]; let n = p.nom, px = p.prix || 0;
+            if(p.options) n += " (" + document.getElementById('term-opt-'+id).value + ")";
+            if(p.specials) { const s = document.getElementById('term-spec-'+id).value.split('|'); n += " " + s[0]; px = parseFloat(s[1]); }
+            panierInterne.push({nom: n, prix: px, categorie: p.categorie});
+            majPanierInterne();
+        }
 
+        function majPanierInterne() {
+            let total = 0, temp = [...panierInterne], nF=0, nG=0, nT=0;
+            // Logique Menus (Family > Gourmand > Tokyo)
+            while (temp.filter(i => i.categorie === "sushis").length >= 5) { nF++; total += 44.9; for(let k=0;k<5;k++) temp.splice(temp.findIndex(i=>i.categorie==="sushis"),1); }
+            while (true) {
+                let iE=temp.findIndex(i=>i.categorie==="entrees"), iP=temp.findIndex(i=>i.categorie==="plats"&&i.prix===14.9), iB=temp.findIndex(i=>i.categorie==="boissons");
+                if(iE!==-1 && iP!==-1 && iB!==-1) { nG++; total+=20.9; temp.splice(iP,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
+            }
+            while (true) {
+                let iE=temp.findIndex(i=>i.categorie==="entrees"), iS=temp.findIndex(i=>i.categorie==="sushis"), iB=temp.findIndex(i=>i.categorie==="boissons");
+                if(iE!==-1 && iS!==-1 && iB!==-1) { nT++; total+=16.9; temp.splice(iS,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
+            }
+            temp.forEach(i => total += i.prix);
+            document.getElementById('term-total').innerText = "TOTAL: " + total.toFixed(2) + "€";
+            document.getElementById('applied-menu-term').innerText = (nF>0?nF+" Family ":"")+(nG>0?nG+" Gourmand ":"")+(nT>0?nT+" Tokyo":"");
+            document.getElementById('term-cart-list').innerHTML = panierInterne.map((i,idx)=>`<div>${i.nom} <span onclick="panierInterne.splice(${idx},1);majPanierInterne()" style="color:red;cursor:pointer;">✕</span></div>`).join('');
+        }
+
+        function envoyerCommandeInterne() {
+            const table = document.getElementById('term-table').value;
+            if(!table || panierInterne.length === 0) return alert("Table ou panier vide");
+            db.ref('commandes').push({
+                table, articles: panierInterne, statut: "En attente", 
+                total: document.getElementById('term-total').innerText.split(': ')[1].replace('€',''),
+                menu: document.getElementById('applied-menu-term').innerText,
+                heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+            }).then(() => { panierInterne=[]; majPanierInterne(); document.getElementById('term-table').value=""; });
+        }
+
+        // --- COMMANDES ACTIVES ET HISTORIQUE ---
+        db.ref('commandes').on('value', snap => {
+            const data = snap.val(); let oH = "", hH = "", totJ = 0;
+            const today = new Date().toLocaleDateString('fr-FR');
             for(let id in data) {
                 const o = data[id];
                 if(o.statut === "Payé") {
                     if(o.date === today) {
-                        totalJour += parseFloat(o.total);
-                        hH = `<div style="padding:10px; border-bottom:1px solid #333; font-size:0.8rem;">
-                                <b>Table ${o.table}</b> - ${o.total}€ (${o.modePaiement})<br>
-                                <small style="color:#666;">${o.heure}</small>
-                              </div>` + hH;
+                        totJ += parseFloat(o.total);
+                        hH = `<div style="padding:8px; border-bottom:1px solid #222; font-size:0.7rem;"><b>T-${o.table}</b>: ${o.total}€ (${o.modePaiement})</div>` + hH;
                     }
                 } else {
                     oH += `<div class="order-card">
-                        <div class="order-table">TABLE ${o.table} <span style="float:right; font-size:0.7rem; color:#666;">${o.heure}</span></div>
-                        <div style="color:var(--gold); font-size:0.7rem; margin-bottom:10px;">${o.menu || ''}</div>
-                        <div>${o.articles.map(a => `
-                            <div class="order-item">
-                                • ${a.nom} ${a.note ? `<br><span class="order-note">Note: ${a.note}</span>` : ''}
-                            </div>`).join('')}
-                        </div>
-                        <div style="text-align:right; font-weight:bold; margin-top:10px;">TOTAL: ${o.total}€</div>
-                        <div class="btn-group">
-                            <button class="btn btn-chef" onclick="imprimerChef('${id}')">TICKET CHEF</button>
-                            <button class="btn btn-esp" onclick="encaisser('${id}','ESPÈCES')">CASH</button>
-                            <button class="btn btn-cb" onclick="encaisser('${id}','CARTE CB')">CB</button>
+                        <div style="font-weight:700; color:var(--gold);">TABLE ${o.table} <span style="float:right; color:#666; font-size:0.6rem;">${o.heure}</span></div>
+                        <div style="font-size:0.75rem; margin:8px 0;">${o.articles.map(a => `• ${a.nom}${a.note?' <i style="color:red;">('+a.note+')</i>':''}`).join('<br>')}</div>
+                        <div style="text-align:right; font-weight:700; font-size:0.8rem;">${o.total}€</div>
+                        <div class="btn-pay-group">
+                            <button class="btn-action" style="background:var(--blue);" onclick="imprimerChef('${id}')">CHEF</button>
+                            <button class="btn-action" style="background:var(--green);" onclick="encaisser('${id}','CASH')">CASH</button>
+                            <button class="btn-action" style="background:#3498db;" onclick="encaisser('${id}','CB')">CB</button>
                         </div>
                     </div>`;
                 }
             }
             document.getElementById('order-list').innerHTML = oH;
             document.getElementById('history-list').innerHTML = hH;
-            document.getElementById('day-total').innerText = "TOTAL : " + totalJour.toFixed(2) + "€";
+            document.getElementById('day-total').innerText = totJ.toFixed(2) + "€";
         });
 
-        // 3. FONCTION IMPRESSION CHEF (CUISINE)
         function imprimerChef(id) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
-                let html = `<div class="print-chef" style="text-align:center;">
-                    <h1 style="font-size:40pt; margin:0;">TABLE ${o.table}</h1>
-                    <p style="font-size:15pt;">Heure: ${o.heure}</p>
-                    <hr style="border:2px solid black;">
-                </div>`;
-                o.articles.forEach(a => {
-                    html += `<div style="font-size:24pt; margin-bottom:15px; border-bottom:1px dashed black; padding-bottom:5px;">
-                        • ${a.nom.toUpperCase()}
-                        ${a.note ? `<br><span style="font-size:18pt; background:black; color:white;"> !!! ${a.note.toUpperCase()} !!! </span>` : ''}
-                    </div>`;
-                });
-                document.getElementById('print-area').innerHTML = html;
-                window.print();
+                let h = `<div style="text-align:center;"><h1 style="font-size:40pt;">TABLE ${o.table}</h1><hr></div>`;
+                o.articles.forEach(a => h += `<div style="font-size:24pt; border-bottom:1px dashed #000; padding:10px 0;">• ${a.nom.toUpperCase()}${a.note?`<br><span style="background:#000;color:#fff;">!! ${a.note.toUpperCase()} !!</span>`:''}</div>`);
+                document.getElementById('print-area').innerHTML = h; window.print();
             });
         }
 
-        // 4. FONCTION ENCAISSEMENT ET TICKET CLIENT
         function encaisser(id, mode) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
-                // Préparation du ticket client
-                let html = `<div class="print-client" style="text-align:center;">
-                    <img src="images/logo.png" style="width:120px;"><br>
-                    <b style="font-size:16pt;">THAI JAP</b><br>
-                    Table ${o.table} | ${o.heure}<br>
-                    --------------------------------
-                </div>`;
-                o.articles.forEach(a => {
-                    html += `<div style="display:flex; justify-content:space-between; font-size:10pt;">
-                        <span>${a.nom}</span>
-                        <span>${a.prix.toFixed(2)}€</span>
-                    </div>`;
-                });
-                html += `<div style="text-align:center;">
-                    --------------------------------<br>
-                    <b style="font-size:14pt;">TOTAL : ${o.total}€</b><br>
-                    Mode : ${mode}<br><br>
-                    Merci de votre visite !
-                </div>`;
-                
-                document.getElementById('print-area').innerHTML = html;
-                window.print();
-
-                // Mise à jour base de données (bascule vers historique)
-                db.ref('commandes/'+id).update({ 
-                    statut: "Payé", 
-                    modePaiement: mode, 
-                    date: new Date().toLocaleDateString('fr-FR') 
-                });
+                let h = `<div style="text-align:center;"><h2>THAI JAP</h2>Table ${o.table} | ${o.heure}<hr></div>`;
+                o.articles.forEach(a => h += `<div style="display:flex;justify-content:space-between;"><span>${a.nom}</span><span>${a.prix.toFixed(2)}€</span></div>`);
+                h += `<hr><div style="display:flex;justify-content:space-between;font-weight:bold;"><span>TOTAL</span><span>${o.total}€</span></div>`;
+                document.getElementById('print-area').innerHTML = h; window.print();
+                db.ref('commandes/'+id).update({ statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR') });
             });
         }
     </script>
