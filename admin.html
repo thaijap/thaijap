@@ -2,70 +2,50 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin ThaiJap | Dashboard</title>
+    <title>Admin ThaiJap</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Courier+Prime&display=swap" rel="stylesheet">
     <style>
-        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --green: #2ecc71; --blue: #3498db; --grey: #1a1a1a; }
+        :root { --red: #BC002D; --black: #121212; --gold: #C5A059; --green: #2ecc71; --blue: #3498db; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: #000; color: #fff; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 300px; background: var(--grey); border-right: 1px solid #333; overflow-y: auto; }
+        .sidebar { width: 300px; background: #1a1a1a; border-right: 1px solid #333; overflow-y: auto; }
         .main { flex: 1; background: #050505; display: flex; flex-direction: column; border-right: 1px solid #333; }
         .history { width: 280px; background: #111; overflow-y: auto; }
-        .panel-header { padding: 12px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; font-size: 0.8rem; text-transform: uppercase; }
+        .panel-header { padding: 12px; background: #000; color: var(--red); font-weight: 700; border-bottom: 2px solid var(--red); text-align: center; font-size: 0.8rem; }
         #order-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .order-card { background: var(--grey); padding: 12px; border-radius: 6px; border-top: 4px solid var(--red); margin-bottom: 10px; position: relative; }
-        .mod-badge { background: #ff9800; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; margin-left: 10px; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        .order-card { background: #1a1a1a; padding: 12px; border-radius: 6px; border-top: 4px solid var(--red); margin-bottom: 10px; position: relative; }
+        .mod-badge { background: orange; color: #000; padding: 2px 5px; border-radius: 3px; font-size: 0.6rem; font-weight: bold; margin-left: 5px; }
         .btn-pay-group { display: flex; gap: 4px; margin-top: 10px; }
         .btn-action { border: none; padding: 8px; border-radius: 4px; color: white; font-weight: 700; cursor: pointer; flex: 1; font-size: 0.65rem; }
-        
         .terminal-box { height: 320px; background: #151515; border-top: 2px solid var(--gold); display: flex; flex-direction: column; }
         .terminal-grid { display: flex; flex: 1; overflow: hidden; }
         .term-products { flex: 2; overflow-y: auto; padding: 8px; }
-        .term-cart { flex: 1; background: #0a0a0a; padding: 10px; display: flex; flex-direction: column; }
-        .term-item { background: #222; margin-bottom: 4px; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
-
+        .term-cart { flex: 1; background: #0a0a0a; padding: 10px; }
         #print-area { display: none; }
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: #000; font-family: 'Courier Prime', monospace; }
-        }
+        @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; color: #000; font-family: 'Courier Prime', monospace; } }
     </style>
 </head>
 <body>
     <div id="print-area"></div>
-
-    <aside class="sidebar no-print">
-        <div class="panel-header">📦 STOCKS</div>
-        <div id="stock-list"></div>
-    </aside>
-
+    <aside class="sidebar no-print"><div class="panel-header">📦 STOCKS</div><div id="stock-list"></div></aside>
     <main class="main no-print">
         <div class="panel-header">🔥 COMMANDES ACTIVES</div>
         <div id="order-list"></div>
-
         <div class="terminal-box">
             <div class="panel-header" style="color:var(--gold); border-color:var(--gold);">⌨️ TERMINAL MANUEL</div>
             <div class="terminal-grid">
                 <div id="term-products" class="term-products"></div>
                 <div class="term-cart">
                     <input type="text" id="term-table" placeholder="Table" style="width:100%; padding:5px; margin-bottom:5px; background:#000; color:#fff; border:1px solid #333;">
-                    <div id="term-cart-list" style="flex:1; overflow-y:auto; font-size:0.7rem;"></div>
+                    <div id="term-cart-list" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#fff;"></div>
                     <div id="term-total" style="color:var(--gold); font-weight:bold; padding:5px 0;">0.00€</div>
                     <button class="btn-action" style="background:var(--gold); color:#000;" onclick="envoyerManuel()">ENVOYER</button>
                 </div>
             </div>
         </div>
     </main>
-
-    <aside class="history no-print">
-        <div class="panel-header">📊 CAISSE DU JOUR</div>
-        <div id="day-total" style="text-align:center; padding:10px; background:var(--gold); color:black; font-weight:bold;">0.00€</div>
-        <div id="history-list"></div>
-    </aside>
-
+    <aside class="history no-print"><div class="panel-header">📊 CAISSE DU JOUR</div><div id="day-total" style="text-align:center; padding:10px; background:var(--gold); color:black; font-weight:bold;">0.00€</div><div id="history-list"></div></aside>
     <script>
         const firebaseConfig = { apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", projectId: "thaijap", appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" };
         firebase.initializeApp(firebaseConfig);
@@ -73,40 +53,17 @@
         let menuData = {}, panierM = [];
 
         db.ref('/').on('value', snap => {
-            menuData = snap.val();
-            let sH = "", tH = "";
+            menuData = snap.val(); let sH = "", tH = "";
             ["entrees", "sushis", "plats", "boissons", "desserts"].forEach(cat => {
                 sH += `<div style="background:var(--red); padding:5px; font-size:0.6rem;">${cat.toUpperCase()}</div>`;
-                for(let id in menuData) {
-                    if(id.startsWith('p') && menuData[id].categorie === cat) {
-                        const p = menuData[id];
-                        sH += `<div style="padding:8px; border-bottom:1px solid #222; display:flex; justify-content:space-between;">
-                            <span style="font-size:0.7rem;">${p.nom}</span>
-                            <button onclick="db.ref('${id}/dispo').set(${!p.dispo})" style="background:${p.dispo?'#2ecc71':'#BC002D'}; color:#fff; border:none; padding:2px 5px; font-size:0.6rem;">${p.dispo?'ON':'OFF'}</button>
-                        </div>`;
-                        if(p.dispo) tH += `<div class="term-item" onclick="ajouterM('${id}')">${p.nom}</div>`;
-                    }
-                }
+                for(let id in menuData) { if(id.startsWith('p') && menuData[id].categorie === cat) { const p = menuData[id]; sH += `<div style="padding:8px; border-bottom:1px solid #222; display:flex; justify-content:space-between;"><span style="font-size:0.7rem;">${p.nom}</span><button onclick="db.ref('${id}/dispo').set(${!p.dispo})" style="background:${p.dispo?'#2ecc71':'#BC002D'}; color:#fff; border:none; font-size:0.6rem;">${p.dispo?'ON':'OFF'}</button></div>`; if(p.dispo) tH += `<div style="background:#222; margin-bottom:4px; padding:6px; font-size:0.75rem; cursor:pointer;" onclick="ajouterM('${id}')">${p.nom}</div>`; } }
             });
-            document.getElementById('stock-list').innerHTML = sH;
-            document.getElementById('term-products').innerHTML = tH;
+            document.getElementById('stock-list').innerHTML = sH; document.getElementById('term-products').innerHTML = tH;
         });
 
-        function ajouterM(id) { 
-            panierM.push({nom: menuData[id].nom, prix: menuData[id].prix || 0, categorie: menuData[id].categorie}); 
-            majM(); 
-        }
-        function majM() {
-            let tot = panierM.reduce((a,b)=>a+b.prix, 0);
-            document.getElementById('term-total').innerText = tot.toFixed(2)+"€";
-            document.getElementById('term-cart-list').innerHTML = panierM.map((i,idx)=>`<div>${i.nom} <span onclick="panierM.splice(${idx},1);majM()" style="color:red;cursor:pointer;">✕</span></div>`).join('');
-        }
-        function envoyerManuel() {
-            const t = document.getElementById('term-table').value;
-            if(!t || panierM.length==0) return alert("Table vide");
-            db.ref('commandes').push({ table:t, articles:panierM, statut:"En attente", total:document.getElementById('term-total').innerText.replace('€',''), heure:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}), date:new Date().toLocaleDateString('fr-FR')});
-            panierM=[]; majM(); document.getElementById('term-table').value="";
-        }
+        function ajouterM(id) { panierM.push({nom: menuData[id].nom, prix: menuData[id].prix || 0, categorie: menuData[id].categorie}); majM(); }
+        function majM() { let tot = panierM.reduce((a,b)=>a+b.prix, 0); document.getElementById('term-total').innerText = tot.toFixed(2)+"€"; document.getElementById('term-cart-list').innerHTML = panierM.map((i,idx)=>`<div>${i.nom} <span onclick="panierM.splice(${idx},1);majM()" style="color:red;cursor:pointer;">✕</span></div>`).join(''); }
+        function envoyerManuel() { const t = document.getElementById('term-table').value; if(!t || panierM.length==0) return alert("Table vide"); db.ref('commandes').push({ table:t, articles:panierM, statut:"En attente", total:document.getElementById('term-total').innerText.replace('€',''), heure:new Date().toLocaleTimeString(), date:new Date().toLocaleDateString('fr-FR')}); panierM=[]; majM(); document.getElementById('term-table').value=""; }
 
         db.ref('commandes').on('value', snap => {
             const data = snap.val(); let oH = "", hH = "", totJ = 0;
@@ -114,39 +71,33 @@
             let count = 1;
             for(let id in data) {
                 const o = data[id];
-                if(o.statut === "Payé") {
-                    if(o.date === today) { totJ += parseFloat(o.total); hH = `<div style="padding:5px; border-bottom:1px solid #222; font-size:0.7rem;">T-${o.table} : ${o.total}€</div>` + hH; }
-                } else {
+                if(o.statut === "Payé") { if(o.date === today) { totJ += parseFloat(o.total); hH = `<div style="padding:5px; border-bottom:1px solid #222; font-size:0.7rem;">T-${o.table} : ${o.total}€</div>` + hH; } }
+                else {
                     oH += `<div class="order-card">
-                        <div style="font-weight:bold; color:var(--gold);">#${count++} TABLE ${o.table} ${o.modifier?'<span class="mod-badge">MODIFIÉ</span>':''} <span style="float:right; color:#666; font-size:0.6rem;">${o.heure}</span></div>
-                        <div style="font-size:0.75rem; margin:8px 0;">${o.articles.map(a => `• ${a.nom}${a.note?' <i style="color:red;">('+a.note+')</i>':''}`).join('<br>')}</div>
+                        <div style="font-weight:bold; color:var(--gold);">#${count++} TABLE ${o.table} ${o.modifier?'<span class="mod-badge">MODIFIÉ</span>':''}</div>
+                        <div style="font-size:0.75rem; margin:8px 0;">${o.articles.map(a => `• ${a.nom}`).join('<br>')}</div>
                         <div class="btn-pay-group">
                             <button class="btn-action" style="background:var(--blue);" onclick="imprimer('${id}', false)">TOUT</button>
                             ${o.derniersAjouts ? `<button class="btn-action" style="background:var(--gold); color:#000;" onclick="imprimer('${id}', true)">SUITE</button>` : ''}
-                            <button class="btn-action" style="background:var(--green);" onclick="encaisser('${id}','CASH')">CASH</button>
+                            <button class="btn-action" style="background:var(--green);" onclick="encaisser('${id}','CASH')">FIN</button>
                         </div>
                     </div>`;
                 }
             }
-            document.getElementById('order-list').innerHTML = oH;
+            document.getElementById('order-list').innerHTML = oH; document.getElementById('day-total').innerText = totJ.toFixed(2)+"€";
             document.getElementById('history-list').innerHTML = hH;
-            document.getElementById('day-total').innerText = totJ.toFixed(2)+"€";
         });
 
-        function imprimer(id, suiteSeule) {
+        function imprimer(id, suite) {
             db.ref('commandes/'+id).once('value', s => {
-                const o = s.val();
-                const liste = suiteSeule ? o.derniersAjouts : o.articles;
-                let h = `<div style="text-align:center;"><h1 style="font-size:40pt;">TABLE ${o.table}</h1>${suiteSeule?'<h2>*** SUITE / AJOUT ***</h2>':''}<hr></div>`;
+                const o = s.val(); const liste = suite ? o.derniersAjouts : o.articles;
+                let h = `<div style="text-align:center;"><h1 style="font-size:40pt;">TABLE ${o.table}</h1>${suite?'<h2>*** SUITE UNIQUEMENT ***</h2>':''}<hr></div>`;
                 liste.forEach(a => h += `<div style="font-size:24pt; border-bottom:1px dashed #000; padding:10px 0;">• ${a.nom.toUpperCase()} ${a.note?`<br>!! ${a.note.toUpperCase()} !!`:''}</div>`);
                 document.getElementById('print-area').innerHTML = h; window.print();
-                if(suiteSeule) db.ref('commandes/'+id).update({ modifier: false, derniersAjouts: null });
+                if(suite) db.ref('commandes/'+id).update({ modifier: false, derniersAjouts: null });
             });
         }
-
-        function encaisser(id, mode) {
-            db.ref('commandes/'+id).update({ statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR') });
-        }
+        function encaisser(id, mode) { db.ref('commandes/'+id).update({ statut: "Payé", modePaiement: mode, date: new Date().toLocaleDateString('fr-FR') }); }
     </script>
 </body>
 </html>
