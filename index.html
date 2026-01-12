@@ -11,10 +11,8 @@
         :root { --red: #BC002D; --black: #121212; --bg: #F8F8F8; --gold: #C5A059; }
         body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); padding-bottom: 120px; }
         header { background: var(--black); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--red); position: sticky; top: 0; z-index: 100; }
-        
         #success-page { display:none; position:fixed; inset:0; background:white; z-index:1000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
         #success-page img { width: 180px; margin-bottom: 20px; }
-        
         .category-title { background: white; padding: 15px 20px; font-size: 1rem; font-weight: 700; color: var(--red); text-transform: uppercase; margin-top: 10px; border-bottom: 1px solid #eee; }
         .product-card { background: white; margin: 10px; display: flex; padding: 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .img-container { width: 90px; height: 90px; min-width: 90px; margin-right: 12px; border-radius: 8px; overflow: hidden; background: #eee; }
@@ -24,77 +22,42 @@
         .jap-select { width: 100%; border: 1px solid #ddd; padding: 8px; margin-top: 5px; border-radius: 6px; font-size: 0.85rem; }
         .note-input { width: 100%; border: none; border-bottom: 1px solid #eee; margin-top: 8px; font-size: 0.75rem; font-style: italic; outline: none; padding: 4px 0; background: transparent; color: #555; }
         .add-btn { background: var(--black); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 1.5rem; cursor: pointer; align-self: center; margin-left: 10px; }
-        
         #cart-bar { position: fixed; bottom: 0; width: 100%; background: var(--black); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; box-sizing: border-box; z-index: 200; border-top: 2px solid var(--red); }
         #btn-commander { background: var(--red); color: white; border: none; padding: 12px 25px; font-weight: 700; border-radius: 8px; cursor: pointer; }
         #cart-drawer { position: fixed; bottom: 85px; left: 10px; right: 10px; background: white; border-radius: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); padding: 15px; display: none; z-index: 190; max-height: 50vh; overflow-y: auto; border: 1px solid #ddd; }
-        
         .sent-items { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px dashed #ccc; }
-        .sent-row { font-size: 0.8rem; color: #777; padding: 4px 0; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
-
     <div id="success-page">
         <img src="images/logo.png" onerror="this.src='https://via.placeholder.com/180?text=THAI+JAP'">
         <h2>C'EST EN CUISINE !</h2>
-        <p>Votre commande a été transmise.<br>Vous pouvez continuer à ajouter des produits si vous le souhaitez.</p>
         <button onclick="document.getElementById('success-page').style.display='none'" style="margin-top:20px; padding:12px 25px; background:var(--black); color:white; border:none; border-radius:8px; font-weight:bold;">RETOUR AU MENU</button>
     </div>
-
-    <header>
-        <h1>THAI JAP</h1>
-        <div id="table-num" style="color:var(--gold); font-weight:bold;">TABLE --</div>
-    </header>
-
+    <header><h1>THAI JAP</h1><div id="table-num" style="color:var(--gold); font-weight:bold;">TABLE --</div></header>
     <main id="menu-container"></main>
-
     <div id="cart-drawer">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
-            <h3 style="margin:0;">Ma Sélection</h3>
-            <span onclick="toggleCart()" style="color:var(--red); font-weight:bold; cursor:pointer;">FERMER</span>
-        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;"><h3 style="margin:0;">Ma Sélection</h3><span onclick="toggleCart()" style="color:var(--red); font-weight:bold; cursor:pointer;">FERMER</span></div>
         <div id="cart-list"></div>
-        
-        <div id="sent-section" class="sent-items" style="display:none;">
-            <div style="font-size:0.7rem; font-weight:bold; color:var(--red); margin-bottom:5px;">DÉJÀ EN PRÉPARATION (Non supprimable) :</div>
-            <div id="sent-list"></div>
-        </div>
+        <div id="sent-section" class="sent-items" style="display:none;"><div style="font-size:0.7rem; font-weight:bold; color:var(--red); margin-bottom:5px;">DÉJÀ EN CUISINE :</div><div id="sent-list"></div></div>
     </div>
-
     <div id="cart-bar" style="display:none;" onclick="toggleCart()">
-        <div>
-            <span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€
-            <div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:bold;"></div>
-        </div>
+        <div><span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€<div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:bold;"></div></div>
         <button id="btn-commander" onclick="event.stopPropagation(); envoyerCommande()">COMMANDER</button>
     </div>
-
     <script>
         const firebaseConfig = { apiKey: "AIzaSyCiqOVjzAS5Crn4SPBkY3btyJtuCBgddpY", databaseURL: "https://thaijap-default-rtdb.europe-west1.firebasedatabase.app", projectId: "thaijap", appId: "1:84821188454:web:0078ba82b4affbe0abb2a7" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const table = new URLSearchParams(window.location.search).get('table') || "Emporter";
         document.getElementById('table-num').innerText = "TABLE " + table;
-        
-        let panier = [];
-        let articlesEnvoyes = [];
-        let currentOrderId = null;
+        let panier = [], articlesEnvoyes = [], currentOrderId = null;
 
-        // Écouter si une commande existe déjà pour cette table
         db.ref('commandes').orderByChild('table').equalTo(table).on('value', snap => {
             let found = false;
-            snap.forEach(child => {
-                const c = child.val();
-                if(c.statut !== "Payé") {
-                    currentOrderId = child.key;
-                    articlesEnvoyes = c.articles || [];
-                    found = true;
-                }
-            });
+            snap.forEach(child => { if(child.val().statut !== "Payé") { currentOrderId = child.key; articlesEnvoyes = child.val().articles || []; found = true; }});
             if(!found) { currentOrderId = null; articlesEnvoyes = []; }
-            majAffichageSent();
-            calculerPanier();
+            majAffichageSent(); calculerPanier();
         });
 
         db.ref('/').on('value', snap => {
@@ -109,12 +72,7 @@
                         let spec = p.specials ? `<select id="spec-${id}" class="jap-select">${p.specials.map(s=>s.s?`<option value="${s.v}|${s.p}">${s.v} (${s.p}€)</option>`:'').join('')}</select>` : "";
                         items += `<div class="product-card">
                             <div class="img-container"><img src="${p.img}" class="product-img"></div>
-                            <div class="product-info">
-                                <span class="prod-name">${p.nom}</span><br>
-                                <span style="color:var(--red); font-weight:bold;">${p.prix?p.prix.toFixed(2)+'€':''}</span>
-                                ${opt} ${spec}
-                                <input type="text" id="note-${id}" class="note-input" placeholder="Note (ex: sans oignons)...">
-                            </div>
+                            <div class="product-info"><span class="prod-name">${p.nom}</span><br><span style="color:var(--red); font-weight:bold;">${p.prix?p.prix.toFixed(2)+'€':''}</span>${opt} ${spec}<input type="text" id="note-${id}" class="note-input" placeholder="Note..."></div>
                             <button class="add-btn" onclick="ajouter('${id}','${p.nom}',${p.prix||0},'${cat}')">+</button>
                         </div>`;
                     }
@@ -127,10 +85,7 @@
         function ajouter(id, nom, prix, cat) {
             let n = nom, pFinal = prix, note = document.getElementById('note-'+id).value;
             if(document.getElementById('opt-'+id)) n += " (" + document.getElementById('opt-'+id).value + ")";
-            if(document.getElementById('spec-'+id)) { 
-                const s = document.getElementById('spec-'+id).value.split('|'); 
-                n += " " + s[0]; pFinal = parseFloat(s[1]); 
-            }
+            if(document.getElementById('spec-'+id)) { const s = document.getElementById('spec-'+id).value.split('|'); n += " " + s[0]; pFinal = parseFloat(s[1]); }
             panier.push({nom: n, prix: pFinal, categorie: cat, note: note});
             document.getElementById('note-'+id).value = "";
             calculerPanier();
@@ -138,16 +93,12 @@
 
         function majAffichageSent() {
             const sec = document.getElementById('sent-section');
-            if(articlesEnvoyes.length > 0) {
-                sec.style.display = "block";
-                document.getElementById('sent-list').innerHTML = articlesEnvoyes.map(a => `<div class="sent-row">✓ ${a.nom}</div>`).join('');
-            } else { sec.style.display = "none"; }
+            if(articlesEnvoyes.length > 0) { sec.style.display = "block"; document.getElementById('sent-list').innerHTML = articlesEnvoyes.map(a => `<div style="font-size:0.8rem; color:#777; padding:2px 0;">✓ ${a.nom}</div>`).join(''); } 
+            else { sec.style.display = "none"; }
         }
 
         function calculerPanier() {
-            let total = 0, temp = [...articlesEnvoyes, ...panier], nF=0, nG=0, nT=0;
-            
-            // Logic Menus
+            let total = 0, temp = JSON.parse(JSON.stringify([...articlesEnvoyes, ...panier])), nF=0, nG=0, nT=0;
             while (temp.filter(i => i.categorie === "sushis").length >= 5) { nF++; total += 44.9; for(let k=0;k<5;k++) temp.splice(temp.findIndex(i=>i.categorie==="sushis"),1); }
             while (true) {
                 let iE=temp.findIndex(i=>i.categorie==="entrees"), iP=temp.findIndex(i=>i.categorie==="plats"&&i.prix===14.9), iB=temp.findIndex(i=>i.categorie==="boissons");
@@ -158,46 +109,27 @@
                 if(iE!==-1 && iS!==-1 && iB!==-1) { nT++; total+=16.9; temp.splice(iS,1); temp.splice(temp.findIndex(i=>i.categorie==="entrees"),1); temp.splice(temp.findIndex(i=>i.categorie==="boissons"),1); } else break;
             }
             temp.forEach(i => total += i.prix);
-
             document.getElementById('cart-count').innerText = panier.length + articlesEnvoyes.length;
             document.getElementById('cart-total').innerText = total.toFixed(2);
             document.getElementById('applied-menu').innerText = (nF>0?nF+" Family ":"")+(nG>0?nG+" Gourmand ":"")+(nT>0?nT+" Tokyo":"");
-            
-            document.getElementById('cart-list').innerHTML = panier.map((i,idx)=>`
-                <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;align-items:center;">
-                    <div style="font-size:0.85rem;"><b>${i.nom}</b>${i.note?`<br><small style="color:red;">${i.note}</small>`:''}</div>
-                    <span onclick="panier.splice(${idx},1);calculerPanier()" style="color:red;font-weight:bold;cursor:pointer;padding:5px;">✕</span>
-                </div>
-            `).join('');
+            document.getElementById('cart-list').innerHTML = panier.map((i,idx)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;"><div style="font-size:0.85rem;"><b>${i.nom}</b>${i.note?`<br><small style="color:red;">${i.note}</small>`:''}</div><span onclick="panier.splice(${idx},1);calculerPanier()" style="color:red;font-weight:bold;cursor:pointer;">✕</span></div>`).join('');
             document.getElementById('cart-bar').style.display = (panier.length + articlesEnvoyes.length > 0) ? "flex" : "none";
         }
 
         function toggleCart() { const d = document.getElementById('cart-drawer'); d.style.display = (d.style.display==='block')?'none':'block'; }
 
         function envoyerCommande() {
-            if(panier.length === 0) return alert("Ajoutez des produits au panier");
+            if(panier.length === 0) return;
             const finalTotal = document.getElementById('cart-total').innerText;
             const finalMenu = document.getElementById('applied-menu').innerText;
             const cumul = [...articlesEnvoyes, ...panier];
-
             if(currentOrderId) {
-                db.ref('commandes/'+currentOrderId).update({
-                    articles: cumul, total: finalTotal, menu: finalMenu,
-                    modifier: true, derniersAjouts: panier 
-                }).then(() => { success(); });
+                db.ref('commandes/'+currentOrderId).update({ articles: cumul, total: finalTotal, menu: finalMenu, modifier: true, derniersAjouts: panier }).then(() => { success(); });
             } else {
-                db.ref('commandes').push({
-                    table, articles: panier, total: finalTotal, menu: finalMenu, statut: "En attente",
-                    heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),
-                    date: new Date().toLocaleDateString('fr-FR')
-                }).then(() => { success(); });
+                db.ref('commandes').push({ table, articles: panier, total: finalTotal, menu: finalMenu, statut: "En attente", heure: new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}), date: new Date().toLocaleDateString('fr-FR') }).then(() => { success(); });
             }
         }
-
-        function success() {
-            document.getElementById('success-page').style.display='flex';
-            panier = []; calculerPanier();
-        }
+        function success() { document.getElementById('success-page').style.display='flex'; panier = []; calculerPanier(); }
     </script>
 </body>
 </html>
