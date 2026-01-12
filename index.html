@@ -39,7 +39,7 @@
     <div id="cart-drawer">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;"><h3 style="margin:0;">Ma Sélection</h3><span onclick="toggleCart()" style="color:var(--red); font-weight:bold; cursor:pointer;">FERMER</span></div>
         <div id="cart-list"></div>
-        <div id="sent-section" class="sent-items" style="display:none;"><div style="font-size:0.7rem; font-weight:bold; color:var(--red); margin-bottom:5px;">DÉJÀ EN PRÉPARATION :</div><div id="sent-list"></div></div>
+        <div id="sent-section" class="sent-items" style="display:none;"><div style="font-size:0.7rem; font-weight:bold; color:var(--red); margin-bottom:5px;">DÉJÀ EN CUISINE :</div><div id="sent-list"></div></div>
     </div>
     <div id="cart-bar" style="display:none;" onclick="toggleCart()">
         <div><span id="cart-count">0</span> ART. | <span id="cart-total">0.00</span>€<div id="applied-menu" style="color:var(--gold); font-size:0.7rem; font-weight:bold;"></div></div>
@@ -51,7 +51,6 @@
         const db = firebase.database();
         const table = new URLSearchParams(window.location.search).get('table') || "Emporter";
         document.getElementById('table-num').innerText = "TABLE " + table;
-        
         let panier = [], articlesEnvoyes = [], currentOrderId = null;
 
         db.ref('commandes').orderByChild('table').equalTo(table).on('value', snap => {
@@ -71,7 +70,12 @@
                     if (id.startsWith('p') && p.categorie === cat && p.dispo) {
                         let opt = p.options ? `<select id="opt-${id}" class="jap-select">${p.options.map(o=>o.s?`<option value="${o.n}">${o.n}</option>`:'').join('')}</select>` : "";
                         let spec = p.specials ? `<select id="spec-${id}" class="jap-select">${p.specials.map(s=>s.s?`<option value="${s.v}|${s.p}">${s.v} (${s.p}€)</option>`:'').join('')}</select>` : "";
-                        items += `<div class="product-card"><div class="img-container"><img src="${p.img}" class="product-img" onerror="this.src='https://via.placeholder.com/150'"></div><div class="product-info"><span class="prod-name">${p.nom}</span><br><span style="color:var(--red); font-weight:bold;">${p.prix?p.prix.toFixed(2)+'€':''}</span>${opt} ${spec}<input type="text" id="note-${id}" class="note-input" placeholder="Note..."></div><button class="add-btn" onclick="ajouter('${id}','${p.nom}',${p.prix||0},'${cat}')">+</button></div>`;
+                        if((p.options && !opt.includes('<option')) || (p.specials && !spec.includes('<option'))) continue;
+                        items += `<div class="product-card">
+                            <div class="img-container"><img src="${p.img}" class="product-img" onerror="this.src='https://via.placeholder.com/150'"></div>
+                            <div class="product-info"><span class="prod-name">${p.nom}</span><br><span style="color:var(--red); font-weight:bold;">${p.prix?p.prix.toFixed(2)+'€':''}</span>${opt} ${spec}<input type="text" id="note-${id}" class="note-input" placeholder="Note..."></div>
+                            <button class="add-btn" onclick="ajouter('${id}','${p.nom}',${p.prix||0},'${cat}')">+</button>
+                        </div>`;
                     }
                 }
                 if(items) html += `<div class="category-title">${cat}</div>` + items;
@@ -84,7 +88,8 @@
             if(document.getElementById('opt-'+id)) n += " (" + document.getElementById('opt-'+id).value + ")";
             if(document.getElementById('spec-'+id)) { const s = document.getElementById('spec-'+id).value.split('|'); n += " " + s[0]; pFinal = parseFloat(s[1]); }
             panier.push({nom: n, prix: pFinal, categorie: cat, note: note});
-            document.getElementById('note-'+id).value = ""; calculerPanier();
+            document.getElementById('note-'+id).value = "";
+            calculerPanier();
         }
 
         function majAffichageSent() {
