@@ -84,7 +84,7 @@
             <button id="tab-month" class="tab-btn" onclick="changeFilter('month')">MOIS</button>
         </div>
         <div id="day-total" style="text-align:center; padding:15px; background:var(--gold); color:black; font-weight:800; font-size:1.4rem;">0.00€</div>
-        <div id="history-list"></div>
+        <div id="history-list" style="padding:10px; flex:1; overflow-y:auto;"></div>
     </aside>
 
     <script>
@@ -129,16 +129,36 @@
         }
 
         // --- COMMANDES ET HISTORIQUE ---
-        function changeFilter(f) { filter = f; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab-'+f).classList.add('active'); db.ref('commandes').once('value', s => render(s.val())); }
+        function changeFilter(f) { 
+            filter = f; 
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+            document.getElementById('tab-'+f).classList.add('active'); 
+            db.ref('commandes').once('value', s => render(s.val())); 
+        }
+
         db.ref('commandes').on('value', s => render(s.val()));
 
         function render(data) {
-            let oH = "", hH = "", totF = 0; const today = new Date().toLocaleDateString('fr-FR');
+            let oH = "", hH = "", totF = 0; 
+            const now = new Date();
+            const today = now.toLocaleDateString('fr-FR'); // Ex: 13/01/2026
+            const currentMonthYear = today.substring(3); // Ex: 01/2026
+
             for(let id in data) {
                 const o = data[id];
                 if(o.statut === "Payé") {
-                    let match = (filter==='day' && o.date===today) || (filter==='month' && o.date.includes(today.split('/').slice(1).join('/')));
-                    if(match) { totF += parseFloat(o.total); hH = `<div class="hist-item" onclick="showHistDetails('${id}')"><div style="display:flex;justify-content:space-between;"><b>T-${o.table}</b> <b>${o.total}€</b></div><small>${o.date} | ${o.modePaiement}</small></div>` + hH; }
+                    // Logique de filtrage corrigée
+                    let match = false;
+                    if (filter === 'day' && o.date === today) {
+                        match = true;
+                    } else if (filter === 'month' && o.date && o.date.includes(currentMonthYear)) {
+                        match = true;
+                    }
+
+                    if(match) { 
+                        totF += parseFloat(o.total); 
+                        hH = `<div class="hist-item" onclick="showHistDetails('${id}')"><div style="display:flex;justify-content:space-between;"><b>T-${o.table}</b> <b>${o.total}€</b></div><small>${o.date} | ${o.modePaiement}</small></div>` + hH; 
+                    }
                 } else {
                     oH += `<div class="order-card">
                         <div style="display:flex;justify-content:space-between;align-items:center;"><b>TABLE ${o.table}</b><button class="btn-toggle on" style="font-size:0.5rem;background:var(--blue);border:none;" onclick="editOrder('${id}')">MODIF</button></div>
@@ -153,9 +173,12 @@
                     </div>`;
                 }
             }
-            document.getElementById('order-list').innerHTML = oH; document.getElementById('history-list').innerHTML = hH; document.getElementById('day-total').innerText = totF.toFixed(2)+"€";
+            document.getElementById('order-list').innerHTML = oH; 
+            document.getElementById('history-list').innerHTML = hH; 
+            document.getElementById('day-total').innerText = totF.toFixed(2)+"€";
         }
 
+        // ... Reste des fonctions (showHistDetails, imprimerTicket, encaisser, editOrder, validerTerminal, annulerModif) identiques au code précédent ...
         function showHistDetails(id) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
@@ -202,9 +225,7 @@
             const tot = panierM.reduce((a,b)=>a+b.prix,0).toFixed(2);
 
             if(editingOrderId) {
-                // On calcule les nouveaux ajouts pour le bouton SUITE
                 const nouveaux = panierM.filter(p => !oldArticles.some(x => x.nom === p.nom));
-                
                 db.ref('commandes/'+editingOrderId).update({
                     articles: panierM,
                     total: tot,
