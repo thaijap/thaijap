@@ -84,7 +84,7 @@
             <button id="tab-month" class="tab-btn" onclick="changeFilter('month')">MOIS</button>
         </div>
         <div id="day-total" style="text-align:center; padding:15px; background:var(--gold); color:black; font-weight:800; font-size:1.4rem;">0.00€</div>
-        <div id="history-list" style="padding:10px; flex:1; overflow-y:auto;"></div>
+        <div id="history-list" style="flex:1; overflow-y:auto; padding:10px;"></div>
     </aside>
 
     <script>
@@ -138,21 +138,30 @@
 
         db.ref('commandes').on('value', s => render(s.val()));
 
+        function parseDate(dateStr) {
+            if(!dateStr) return null;
+            const parts = dateStr.split('/');
+            return { day: parseInt(parts[0]), month: parseInt(parts[1]), year: parseInt(parts[2]) };
+        }
+
         function render(data) {
             let oH = "", hH = "", totF = 0; 
             const now = new Date();
-            const today = now.toLocaleDateString('fr-FR'); // Ex: 13/01/2026
-            const currentMonthYear = today.substring(3); // Ex: 01/2026
+            const todayD = now.getDate();
+            const todayM = now.getMonth() + 1;
+            const todayY = now.getFullYear();
 
             for(let id in data) {
                 const o = data[id];
                 if(o.statut === "Payé") {
-                    // Logique de filtrage corrigée
+                    const cDate = parseDate(o.date);
+                    if(!cDate) continue;
+
                     let match = false;
-                    if (filter === 'day' && o.date === today) {
-                        match = true;
-                    } else if (filter === 'month' && o.date && o.date.includes(currentMonthYear)) {
-                        match = true;
+                    if(filter === 'day') {
+                        if(cDate.day === todayD && cDate.month === todayM && cDate.year === todayY) match = true;
+                    } else if(filter === 'month') {
+                        if(cDate.month === todayM && cDate.year === todayY) match = true;
                     }
 
                     if(match) { 
@@ -165,7 +174,7 @@
                         <div style="font-size:0.75rem;margin:10px 0;color:#bbb;">${o.articles ? o.articles.map(a=>`• ${a.nom}`).join('<br>') : ''}</div>
                         <div style="text-align:right;font-weight:bold;color:var(--gold);border-top:1px solid #333;padding-top:10px;">${o.total}€</div>
                         <div style="display:flex;gap:4px;margin-top:10px;">
-                            <button class="btn-action" style="background:var(--blue);flex:1;" onclick="imprimerTicket('${id}','CLIENT','NOTE')">NOTE</button>
+                            <button class="btn-action" style="background:var(--blue);flex:1;" onclick="imprimerTicket('${id}','CLIENT','NOTE')">TICKET</button>
                             ${o.derniersAjouts ? `<button class="btn-action" style="background:orange;color:black;flex:1;" onclick="imprimerTicket('${id}','CHEF','SUITE')">SUITE</button>` : ''}
                             <button class="btn-action" style="background:var(--green);flex:1;" onclick="encaisser('${id}','CASH')">CASH</button>
                             <button class="btn-action" style="background:#3498db;flex:1;" onclick="encaisser('${id}','CB')">CB</button>
@@ -178,7 +187,6 @@
             document.getElementById('day-total').innerText = totF.toFixed(2)+"€";
         }
 
-        // ... Reste des fonctions (showHistDetails, imprimerTicket, encaisser, editOrder, validerTerminal, annulerModif) identiques au code précédent ...
         function showHistDetails(id) {
             db.ref('commandes/'+id).once('value', s => {
                 const o = s.val();
